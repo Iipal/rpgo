@@ -1,0 +1,124 @@
+{
+  "enemies": [
+    {
+      "id": "forest_wolf",
+      "name": "Forest Wolf",
+      "description": "A lean grey wolf with yellow eyes.",
+      "level": 1,
+      "behaviorId": "enemy_skirmisher",
+      "attributes": { "strength": 4, "agility": 7, "intelligence": 1, "vitality": 4 },
+      "abilityIds": ["enemy_claw"],
+      "row": "front"
+    },
+    {
+      "id": "goblin_scout",
+      "name": "Goblin Scout",
+      "description": "A wiry goblin with a notched blade.",
+      "level": 1,
+      "behaviorId": "enemy_skirmisher",
+      "attributes": { "strength": 4, "agility": 6, "intelligence": 3, "vitality": 4 },
+      "abilityIds": ["enemy_claw", "enemy_envenom"],
+      "row": "front"
+    },
+    {
+      "id": "goblin_brute",
+      "name": "Goblin Brute",
+      "description": "A broad goblin carrying a split-hafted maul.",
+      "level": 2,
+      "behaviorId": "enemy_brute",
+      "attributes": { "strength": 8, "agility": 3, "intelligence": 1, "vitality": 7 },
+      "abilityIds": ["enemy_heavy", "enemy_sunder"],
+      "row": "front"
+    },
+    {
+      "id": "bandit_thug",
+      "name": "Bandit Thug",
+      "description": "A road robber in patched leathers.",
+      "level": 1,
+      "behaviorId": "enemy_brute",
+      "attributes": { "strength": 6, "agility": 4, "intelligence": 2, "vitality": 5 },
+      "abilityIds": ["enemy_heavy"],
+      "row": "front"
+    },
+    {
+      "id": "bandit_archer",
+      "name": "Bandit Archer",
+      "description": "A bandit with a hunting bow and a bad temper.",
+      "level": 1,
+      "behaviorId": "enemy_skirmisher",
+      "attributes": { "strength": 4, "agility": 7, "intelligence": 3, "vitality": 4 },
+      "abilityIds": ["enemy_claw"],
+      "row": "back"
+    },
+    {
+      "id": "skeleton_warrior",
+      "name": "Skeleton Warrior",
+      "description": "Old bones held together by older spite.",
+      "level": 2,
+      "behaviorId": "enemy_brute",
+      "attributes": { "strength": 7, "agility": 3, "intelligence": 1, "vitality": 6 },
+      "abilityIds": ["enemy_heavy", "enemy_sunder"],
+      "row": "front"
+    },
+    {
+      "id": "cultist",
+      "name": "Cultist",
+      "description": "A hooded figure muttering to something unseen.",
+      "level": 2,
+      "behaviorId": "enemy_caster",
+      "attributes": { "strength": 2, "agility": 4, "intelligence": 8, "vitality": 4 },
+      "abilityIds": ["enemy_bolt", "enemy_envenom"],
+      "row": "back"
+    },
+    {
+      "id": "ruin_wraith",
+      "name": "Ruin Wraith",
+      "description": "A smear of cold air and half-remembered pain.",
+      "level": 3,
+      "behaviorId": "enemy_caster",
+      "attributes": { "strength": 3, "agility": 6, "intelligence": 9, "vitality": 5 },
+      "abilityIds": ["enemy_bolt", "enemy_sunder"],
+      "row": "back"
+    },
+    {
+      "id": "dire_boar",
+      "name": "Dire Boar",
+      "description": "A bristling mass of muscle and tusk.",
+      "level": 2,
+      "behaviorId": "enemy_brute",
+      "attributes": { "strength": 9, "agility": 3, "intelligence": 1, "vitality": 8 },
+      "abilityIds": ["enemy_heavy"],
+      "row": "front"
+    },
+    {
+      "id": "bandit_captain",
+      "name": "Bandit Captain",
+      "description": "Scarred, armoured, and clearly in charge.",
+      "level": 3,
+      "behaviorId": "enemy_brute",
+      "attributes": { "strength": 9, "agility": 5, "intelligence": 4, "vitality": 8 },
+      "abilityIds": ["enemy_heavy", "enemy_sunder"],
+      "row": "front"
+    },
+    {
+      "id": "cult_adept",
+      "name": "Cult Adept",
+      "description": "A chant-leader of the ashen cult.",
+      "level": 3,
+      "behaviorId": "enemy_support",
+      "attributes": { "strength": 2, "agility": 4, "intelligence": 9, "vitality": 5 },
+      "abilityIds": ["enemy_bolt", "enemy_heal"],
+      "row": "back"
+    },
+    {
+      "id": "ash_warden",
+      "name": "Ash Warden",
+      "description": "A towering figure of charred plate and ember light.",
+      "level": 4,
+      "behaviorId": "enemy_brute",
+      "attributes": { "strength": 11, "agility": 4, "intelligence": 5, "vitality": 10 },
+      "abilityIds": ["enemy_heavy", "enemy_sunder"],
+      "row": "front"
+    }
+  ]
+}

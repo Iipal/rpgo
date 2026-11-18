@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["bun"],
+    "baseUrl": ".",
+    "paths": {
+      "@rpgo/contracts": ["packages/contracts/src/index.ts"],
+      "@rpgo/game-rules": ["packages/game-rules/src/index.ts"],
+      "@rpgo/game-content": ["packages/game-content/src/index.ts"]
+    }
+  },
+  "include": [
+    "apps/server/src/**/*.ts",
+    "apps/web/src/**/*.ts",
+    "apps/web/src/**/*.tsx",
+    "apps/web/vite.config.ts",
+    "packages/*/src/**/*.ts",
+    "scripts/**/*.ts"
+  ],
+  "exclude": ["node_modules", "**/node_modules", "**/dist"]
+}

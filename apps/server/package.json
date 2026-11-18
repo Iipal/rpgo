@@ -1,0 +1,23 @@
+{
+  "name": "@rpgo/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "build": "bun build src/index.ts --target bun --outdir dist --sourcemap=linked",
+    "migrate": "bun src/infrastructure/database/migrate-cli.ts",
+    "seed": "bun src/infrastructure/database/seed-cli.ts"
+  },
+  "dependencies": {
+    "@rpgo/contracts": "workspace:*",
+    "@rpgo/game-content": "workspace:*",
+    "@rpgo/game-rules": "workspace:*",
+    "hono": "^4.13.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "regions": [
+    {
+      "id": "greenreach",
+      "name": "Greenreach",
+      "description": "A quiet frontier of thatched villages, old roads, and woods that remember older names.",
+      "levelRange": { "min": 1, "max": 3 },
+      "status": "accessible",
+      "threatLevel": 1,
+      "locations": [
+        {
+          "id": "thornbury",
+          "name": "Thornbury Village",
+          "description": "A market village of timber and stone. The guild board stands beside the well.",
+          "status": "accessible"
+        },
+        {
+          "id": "old_road",
+          "name": "The Old Road",
+          "description": "A moss-grown trade road. Wagons once crossed here; now only hoofprints and rumours.",
+          "status": "discovered"
+        },
+        {
+          "id": "whispering_wood",
+          "name": "Whispering Wood",
+          "description": "Birch and bramble press close. Something moves between the trunks.",
+          "status": "discovered"
+        }
+      ]
+    },
+    {
+      "id": "ashen_march",
+      "name": "Ashen March",
+      "description": "A grey frontier of burned fields, broken walls, and things that do not sleep.",
+      "levelRange": { "min": 3, "max": 6 },
+      "status": "unknown",
+      "threatLevel": 3,
+      "locations": [
+        {
+          "id": "ruined_watchtower",
+          "name": "Ruined Watchtower",
+          "description": "A broken tower on a bald hill. Its beacon has been dark for a generation.",
+          "status": "unknown"
+        },
+        {
+          "id": "ashen_gate",
+          "name": "The Ashen Gate",
+          "description": "A blackened gatehouse half-swallowed by the march. Cold air drifts through it.",
+          "status": "unknown"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "abilities": [
+    {
+      "id": "basic_strike",
+      "name": "Strike",
+      "description": "A measured weapon blow.",
+      "kind": "physical",
+      "power": 1,
+      "target": "enemy",
+      "cooldownRounds": 0
+    },
+    {
+      "id": "power_shot",
+      "name": "Power Shot",
+      "description": "A drawn, aimed shot at a vulnerable target.",
+      "kind": "physical",
+      "power": 1.55,
+      "target": "lowest_enemy",
+      "cooldownRounds": 2
+    },
+    {
+      "id": "guard_stance",
+      "name": "Guard Stance",
+      "description": "Brace behind the shield, raising defense for two rounds.",
+      "kind": "buff",
+      "power": 0,
+      "target": "self",
+      "cooldownRounds": 3,
+      "effect": { "type": "defense_up", "amount": 0.3, "rounds": 2 }
+    },
+    {
+      "id": "arcane_bolt",
+      "name": "Arcane Bolt",
+      "description": "A lance of condensed arcane force.",
+      "kind": "magic",
+      "power": 1.15,
+      "target": "enemy",
+      "cooldownRounds": 0
+    },
+    {
+      "id": "firestorm",
+      "name": "Firestorm",
+      "description": "A spreading burst of flame that scorches every foe.",
+      "kind": "magic",
+      "power": 0.85,
+      "target": "all_enemies",
+      "cooldownRounds": 3
+    },
+    {
+      "id": "smite",
+      "name": "Smite",
+      "description": "A blow of radiant force.",
+      "kind": "magic",
+      "power": 1.2,
+      "target": "enemy",
+      "cooldownRounds": 0
+    },
+    {
+      "id": "mend",
+      "name": "Mend Wounds",
+      "description": "Knit the worst wounds of an ally.",
+      "kind": "heal",
+      "power": 1.3,
+      "target": "ally_lowest",
+      "cooldownRounds": 1
+    },
+    {
+      "id": "enemy_claw",
+      "name": "Claw",
+      "description": "A raking claw strike.",
+      "kind": "physical",
+      "power": 1,
+      "target": "enemy",
+      "cooldownRounds": 0
+    },
+    {
+      "id": "enemy_heavy",
+      "name": "Heavy Blow",
+      "description": "A slow, crushing attack.",
+      "kind": "physical",
+      "power": 1.6,
+      "target": "enemy",
+      "cooldownRounds": 2
+    },
+    {
+      "id": "enemy_bolt",
+      "name": "Dark Bolt",
+      "description": "A dart of corrupted light.",
+      "kind": "magic",
+      "power": 1.2,
+      "target": "lowest_enemy",
+      "cooldownRounds": 0
+    },
+    {
+      "id": "enemy_envenom",
+      "name": "Envenom",
+      "description": "A poisoned cut that lingers.",
+      "kind": "physical",
+      "power": 0.8,
+      "target": "enemy",
+      "cooldownRounds": 2,
+      "effect": { "type": "poison", "damage": 3, "rounds": 3 }
+    },
+    {
+      "id": "enemy_sunder",
+      "name": "Sunder",
+      "description": "A blow that splits armour and confidence.",
+      "kind": "physical",
+      "power": 0.9,
+      "target": "enemy",
+      "cooldownRounds": 2,
+      "effect": { "type": "defense_down", "amount": 0.25, "rounds": 3 }
+    },
+    {
+      "id": "enemy_heal",
+      "name": "Dark Mend",
+      "description": "A whisper that closes an ally's wounds.",
+      "kind": "heal",
+      "power": 1,
+      "target": "ally_lowest",
+      "cooldownRounds": 2
+    }
+  ]
+}

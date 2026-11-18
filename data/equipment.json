@@ -1,0 +1,116 @@
+{
+  "equipment": [
+    {
+      "id": "iron_sword",
+      "name": "Iron Sword",
+      "slot": "weapon",
+      "rarity": "common",
+      "description": "A plain soldier's blade, well balanced.",
+      "bonuses": { "attack": 4 }
+    },
+    {
+      "id": "hunting_bow",
+      "name": "Hunting Bow",
+      "slot": "weapon",
+      "rarity": "common",
+      "description": "A yew bow strung with gut.",
+      "bonuses": { "attack": 3, "critChance": 0.03 }
+    },
+    {
+      "id": "oak_staff",
+      "name": "Oak Staff",
+      "slot": "weapon",
+      "rarity": "common",
+      "description": "A knotted staff capped with river stone.",
+      "bonuses": { "magicAttack": 4 }
+    },
+    {
+      "id": "blessed_mace",
+      "name": "Blessed Mace",
+      "slot": "weapon",
+      "rarity": "common",
+      "description": "A mace inscribed with a small sun.",
+      "bonuses": { "attack": 2, "magicAttack": 3 }
+    },
+    {
+      "id": "leather_armor",
+      "name": "Leather Armor",
+      "slot": "armor",
+      "rarity": "common",
+      "description": "Boiled leather plates stitched over a wool coat.",
+      "bonuses": { "defense": 3 }
+    },
+    {
+      "id": "chain_mail",
+      "name": "Chain Mail",
+      "slot": "armor",
+      "rarity": "uncommon",
+      "description": "Heavy rings, oiled against the rain.",
+      "bonuses": { "defense": 6, "speed": -1 }
+    },
+    {
+      "id": "apprentice_robe",
+      "name": "Apprentice Robe",
+      "slot": "armor",
+      "rarity": "common",
+      "description": "Grey wool embroidered with fading sigils.",
+      "bonuses": { "defense": 2, "mana": 6 }
+    },
+    {
+      "id": "wolf_fang_charm",
+      "name": "Wolf-Fang Charm",
+      "slot": "accessory",
+      "rarity": "uncommon",
+      "description": "A wolf's fang on a leather cord.",
+      "bonuses": { "critChance": 0.05, "speed": 1 }
+    },
+    {
+      "id": "sage_ring",
+      "name": "Sage's Ring",
+      "slot": "accessory",
+      "rarity": "uncommon",
+      "description": "A copper ring warmed by old study.",
+      "bonuses": { "magicAttack": 3, "mana": 4 }
+    },
+    {
+      "id": "charm_of_vigor",
+      "name": "Charm of Vigor",
+      "slot": "accessory",
+      "rarity": "common",
+      "description": "A clay token painted with a green leaf.",
+      "bonuses": { "health": 10 }
+    },
+    {
+      "id": "warden_greatsword",
+      "name": "Warden Greatsword",
+      "slot": "weapon",
+      "rarity": "rare",
+      "description": "A blackened blade that still holds a line of ember light.",
+      "bonuses": { "attack": 9, "critChance": 0.04 }
+    },
+    {
+      "id": "ashen_plate",
+      "name": "Ashen Plate",
+      "slot": "armor",
+      "rarity": "rare",
+      "description": "Scorched plate that turns aside more than steel should.",
+      "bonuses": { "defense": 10, "health": 8 }
+    },
+    {
+      "id": "moonlit_pendant",
+      "name": "Moonlit Pendant",
+      "slot": "accessory",
+      "rarity": "rare",
+      "description": "A sliver of pale stone that glows faintly at night.",
+      "bonuses": { "magicAttack": 5, "mana": 8, "speed": 1 }
+    },
+    {
+      "id": "scout_dagger",
+      "name": "Scout's Dagger",
+      "slot": "weapon",
+      "rarity": "uncommon",
+      "description": "A short blade balanced for quick, precise strikes.",
+      "bonuses": { "attack": 5, "critChance": 0.05 }
+    }
+  ]
+}
