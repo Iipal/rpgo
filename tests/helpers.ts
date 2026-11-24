@@ -10,17 +10,27 @@ import {
 import { Repository } from "../apps/server/src/infrastructure/database/repository";
 import { GenerationService } from "../apps/server/src/infrastructure/llm/generation-service";
 import { DisabledLlmProvider } from "../apps/server/src/infrastructure/llm/openai-provider";
+import type { LlmProvider } from "../apps/server/src/infrastructure/llm/provider";
 
 export interface TestService {
   db: Db;
   repo: Repository;
   service: GameService;
   board: BoardService;
+  generation: GenerationService;
   config: Config;
   close: () => void;
 }
 
-export function createTestService(options: { llmEnabled?: boolean } = {}): TestService {
+export interface TestServiceOptions {
+  llmEnabled?: boolean;
+  provider?: LlmProvider;
+  maxRetries?: number;
+  timeoutMs?: number;
+  maxOutputTokens?: number;
+}
+
+export function createTestService(options: TestServiceOptions = {}): TestService {
   const db = openDatabase(":memory:");
   migrate(db);
   const repo = new Repository(db);
@@ -35,13 +45,14 @@ export function createTestService(options: { llmEnabled?: boolean } = {}): TestS
       baseUrl: "http://127.0.0.1:9/v1",
       apiKey: "test",
       model: "test-model",
-      timeoutMs: 1000,
-      maxRetries: 0,
-      maxOutputTokens: 512,
+      timeoutMs: options.timeoutMs ?? 1000,
+      maxRetries: options.maxRetries ?? 0,
+      maxOutputTokens: options.maxOutputTokens ?? 512,
       debug: false,
     },
   };
-  const generation = new GenerationService(new DisabledLlmProvider("test-model"), repo, config.llm);
+  const provider = options.provider ?? new DisabledLlmProvider("test-model");
+  const generation = new GenerationService(provider, repo, config.llm);
   const board = new BoardService(repo, generation);
   const service = new GameService(repo, board, generation, config);
   return {
@@ -49,6 +60,7 @@ export function createTestService(options: { llmEnabled?: boolean } = {}): TestS
     repo,
     service,
     board,
+    generation,
     config,
     close: () => db.close(),
   };

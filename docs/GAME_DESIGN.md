@@ -1,6 +1,8 @@
-# Game Design (MVP)
+# Game Design
 
-This document is the source of truth for player-facing rules. When a formula or rule changes, update this file and the corresponding pure rule in `packages/game-rules`.
+This document is the source of truth for player-facing rules through the P2 content expansion. When
+a formula or rule changes, update this file and the corresponding pure rule in
+`packages/game-rules`.
 
 ## 1. The loop
 
@@ -18,10 +20,21 @@ There is no real-time progression. Closing the browser changes nothing.
 
 ## 2. World
 
-Two regions ship with the MVP:
+Six regions ship in the P2 content model:
 
-- **Greenreach** — accessible starting region with Thornbury, the Old Road and the Whispering Wood.
-- **Ashen March** — locked frontier with the Ruined Watchtower and Ashen Gate.
+| Region       | Levels | Theme                                 | Entry condition                             |
+| ------------ | ------ | ------------------------------------- | ------------------------------------------- |
+| Greenreach   | 1–3    | Starter frontier, woods and old roads | Starting region                             |
+| Ashen March  | 3–6    | Burned frontier, ruins and ash        | Scout from Greenreach to the Ashen Gate     |
+| Frostmere    | 5–8    | Cold lake country and drowned barrows | Scout from Ashen March to Frostmere Shore   |
+| Sunken Coast | 7–10   | Drowned harbours and salt marsh       | Scout from Frostmere to Tidewreck Harbor    |
+| Emberdeep    | 9–12   | Volcanic forges and cinder markets    | Scout from Sunken Coast to the Ember Gate   |
+| Hollow Crown | 11–15  | Glass fields and an empty throne      | Scout from Emberdeep to the Crown Threshold |
+
+Each region has four to eight locations. Every non-start region declares an explicit scout access
+condition, and authored content validation requires a fallback event from the previous region that
+targets its entry location. The world remains a graph; there is no pathfinding or movement
+simulation.
 
 A region contains locations. Locations have one of three discovery states:
 
@@ -33,7 +46,34 @@ A region contains locations. Locations have one of three discovery states:
 
 Discovery only moves forward. The `discover` command advances a location one step and costs a world turn. A scout event can also advance its target location.
 
-There is no movement simulation or pathfinding. The world is a set of regions, locations and connectivity data.
+A region's status is derived from its locations: accessible if any location is accessible,
+discovered if any location is known, otherwise unknown. Charting a location in a new region is what
+unlocks it. A scout contract from the previous region reveals the next region's entry location; the
+player then charts that location to make the region accessible. Once open, authored attack
+opportunities and generated contracts can use the region.
+
+Regions declare an event-type allowlist and an enemy-family allowlist. Generated concepts must use
+an allowed event type, and generated encounters must draw enemies from families allowed in that
+region. Authored content is validated at import time, so a broken connection, missing route event or
+disallowed enemy fails fast instead of producing an unreachable region.
+
+There is no movement simulation or pathfinding. The world is a set of regions, locations and
+connectivity data. Region and location connections are reciprocal and are shown in the world read
+model.
+
+### 2.1 Threat
+
+Each region has a threat level between 1 and 10. It is recomputed after a contract completes or
+fails:
+
+```text
+threat = min(10, baseThreat + floor(completedEvents / 3) + floor(failedEvents / 2))
+```
+
+The count is per region and includes the outcome just recorded. Recomputation is idempotent, so a
+retried command cannot raise threat twice. Threat is displayed in the world read model and is
+intended to drive harder content bands in later milestones; it does not alter combat maths in the
+MVP.
 
 ## 3. World turns
 
@@ -210,7 +250,11 @@ Statuses: `available`, `active`, `completed`, `failed`, `expired`.
 - Opportunities expire by world turn, never wall-clock time.
 - Active events are not regenerated or overwritten.
 - Fewer than four events is acceptable if generation fails.
-- Board refresh happens after meaningful world actions.
+- Board refresh happens after meaningful world actions. It never blocks the command response: when
+  generation is disabled the board is filled synchronously from fallback definitions; when enabled,
+  model-backed generation and narrative enrichment run in the background with per-event fallback.
+- Temporary opportunities may target a location that is discovered but not yet accessible, which
+  gives the player a reason to use the `discover` command.
 
 ### 6.5 Expiry policy
 
@@ -242,6 +286,14 @@ On defeat or draw:
 - Previously cleared encounters remain completed.
 - Survivors keep remaining HP; defeated characters are incapacitated.
 - Consumed resources remain consumed.
+
+### 6.7 Narrative
+
+Short model-written text is optional flavour for board teasers, event introductions, discovery
+notifications and victory/defeat results. Narrative is generated in the background after the
+authoritative state change and stored on the event or in the journal. If generation is disabled,
+times out or fails validation, deterministic authored text remains in place and nothing about the
+action changes.
 
 ## 7. Rewards
 

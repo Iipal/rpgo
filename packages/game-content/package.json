@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@rpgo/game-rules": "workspace:*"
+    "@rpgo/game-rules": "workspace:*",
+    "zod": "^3.24.0"
   }
 }

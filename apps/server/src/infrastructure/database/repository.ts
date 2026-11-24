@@ -330,6 +330,18 @@ export class Repository {
     this.run("UPDATE regions SET threat_level = ? WHERE id = ?", threat, id);
   }
 
+  countRegionOutcomes(regionId: string): { completed: number; failed: number } {
+    const rows = this.all<{ status: string; count: number }>(
+      `SELECT status, COUNT(*) AS count FROM events
+       WHERE region_id = ? AND status IN ('completed','failed')
+       GROUP BY status`,
+      regionId,
+    );
+    const completed = rows.find((row) => row.status === "completed")?.count ?? 0;
+    const failed = rows.find((row) => row.status === "failed")?.count ?? 0;
+    return { completed, failed };
+  }
+
   /* ---------------- party / characters ---------------- */
 
   getParty(): PartyRow | null {
@@ -633,6 +645,10 @@ export class Repository {
 
   setEventResultText(id: string, text: string): void {
     this.run("UPDATE events SET result_text = ? WHERE id = ?", text, id);
+  }
+
+  setEventNarrative(id: string, hook: string, introduction: string): void {
+    this.run("UPDATE events SET hook = ?, introduction = ? WHERE id = ?", hook, introduction, id);
   }
 
   updateEventProgress(

@@ -103,20 +103,38 @@ export const api = {
   diagnostics: () => request<DiagnosticsDto>("/system/diagnostics"),
 
   acceptEvent: (id: string, operationId: string) =>
-    post<CommandResponseDto>(`/events/${encodeURIComponent(id)}/accept`, { operationId }),
+    post<CommandResponseDto>(`/events/${encodeURIComponent(id)}/accept`, {
+      operationId,
+    }),
   startEvent: (id: string, operationId: string) =>
-    post<CommandResponseDto>(`/events/${encodeURIComponent(id)}/start`, { operationId }),
+    post<CommandResponseDto>(`/events/${encodeURIComponent(id)}/start`, {
+      operationId,
+    }),
   resolveEvent: (id: string, operationId: string) =>
-    post<CommandResponseDto>(`/events/${encodeURIComponent(id)}/resolve`, { operationId }),
+    post<CommandResponseDto>(`/events/${encodeURIComponent(id)}/resolve`, {
+      operationId,
+    }),
   discover: (locationId: string, operationId: string) =>
     post<CommandResponseDto>("/world/discover", { locationId, operationId }),
   rest: (operationId: string) => post<CommandResponseDto>("/world/rest", { operationId }),
   equip: (characterId: string, itemId: string, operationId: string) =>
-    post<CommandResponseDto>("/party/equip", { characterId, itemId, operationId }),
+    post<CommandResponseDto>("/party/equip", {
+      characterId,
+      itemId,
+      operationId,
+    }),
   unequip: (characterId: string, slot: "weapon" | "armor" | "accessory", operationId: string) =>
-    post<CommandResponseDto>("/party/unequip", { characterId, slot, operationId }),
+    post<CommandResponseDto>("/party/unequip", {
+      characterId,
+      slot,
+      operationId,
+    }),
   setFormation: (characterId: string, row: "front" | "back", operationId: string) =>
-    post<CommandResponseDto>("/party/formation", { characterId, row, operationId }),
+    post<CommandResponseDto>("/party/formation", {
+      characterId,
+      row,
+      operationId,
+    }),
   generateEvent: (category: "storyline" | "opportunity" = "opportunity") =>
     post<EventDetailDto>("/dev/generate-event", { category }),
 };

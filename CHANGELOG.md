@@ -2,6 +2,46 @@
 
 All notable user-visible and operational changes are recorded here. The format follows Keep a Changelog and the project uses semantic versioning for the MVP baseline.
 
+## [Unreleased]
+
+### Added
+
+- P2 content model: six regions and thirty locations with stable IDs, versions, tags, reciprocal
+  region/location connections and explicit scout access conditions.
+- Zod schemas and cross-reference validation for authored regions, locations, enemies, abilities and
+  equipment; invalid static content now fails fast at import.
+- Region event-type and enemy-family allowlists; generated concepts and encounters are rejected when
+  they fall outside the region's allowlist.
+- World read model exposes region tags, dynamic route status and location adjacency, and the World
+  screen shows routes and location metadata.
+- Eight additional fallback opportunities chain the new regions together and give each one a
+  playable entry contract.
+- Production baseline audit and P1/P2 status in `docs/PRODUCTION_BASELINE.md`.
+- World rules: region status is derived from known locations and region threat rises in bounded,
+  idempotent steps after completed and failed contracts.
+- Ashen March can now be unlocked: a frontier scout reveals the Ashen Gate, which then becomes
+  reachable and unlocks the region.
+- Narrative generation now covers board teasers, event introductions, discovery notifications and
+  victory/defeat results, all scheduled after the authoritative transaction.
+- Generation fixture set and evaluation test in `tests/fixtures/generation/` and
+  `tests/generation-fixtures.test.ts`.
+- HTTP route, fake-provider, status-effect, world-rule and battle-immutability tests.
+- ADR-0007 documenting the implemented HTTP route shape.
+- ADR-0008 documenting versioned static content and fail-fast reference validation.
+
+### Changed
+
+- Board refresh no longer blocks command responses. When generation is disabled the board is filled
+  synchronously from fallback definitions; when enabled, model-backed generation and narrative
+  enrichment run in the background with per-event fallback.
+- Typecheck now includes `tests/**/*.ts`.
+- Documentation no longer requires a hosted CI pipeline or release tags; the full gate is run locally.
+
+### Fixed
+
+- Region threat was stored but never updated.
+- Biome lint failures caused by formatting drift in web files.
+
 ## [0.1.0] — 2026-11-18
 
 ### Added
@@ -19,7 +59,7 @@ All notable user-visible and operational changes are recorded here. The format f
 - Event Director, Event Generator and Narrative Generator prompts with schema and semantic validation, content allowlists and deterministic fallback events.
 - Diagnostics panel showing API, database and model health, fallback status and recent generation attempts.
 - Unit tests for stats, XP, RNG, combat determinism and termination; integration tests for event lifecycle, partial defeat, rewards, rest, equipment and expiry; model-contract tests for concept and generated-event validation.
-- Full documentation set, six ADRs, prompt contracts, root and app-level `AGENTS.md`, documentation checker and CI workflow.
+- Full documentation set, six ADRs, prompt contracts, root and app-level `AGENTS.md`, and a local documentation checker.
 - Non-numeric `GAME_SEED` values are hashed into a stable numeric seed.
 
 ### Changed
@@ -30,5 +70,4 @@ All notable user-visible and operational changes are recorded here. The format f
 ### Known limitations
 
 - One party, no multiplayer, no tactical grid, no movement simulation, no permadeath.
-- Board refresh after a command can wait on local model inference; the UI keeps the command pending and reports generation status.
 - Storyline sequencing is represented minimally, without multi-stage storyline records.

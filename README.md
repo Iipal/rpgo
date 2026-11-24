@@ -6,7 +6,8 @@ This repository implements the MVP specified in [`docs/MVP_RPG.md`](docs/MVP_RPG
 
 ## What works
 
-- Persisted world, four-character starter party, inventory, equipment and formations.
+- Persisted world across six connected regions and thirty locations, with validated content IDs, tags, routes and region enemy/event allowlists.
+- Four-character starter party, inventory, equipment and formations.
 - Action-based world turns: accepting, completing or failing a contract and discovering a location advance time; viewing, equipping and resting do not.
 - Event board with persistent storyline contracts and temporary opportunities that expire by world turn.
 - Four event types: Dungeon, Scout, Research and Attack.
@@ -88,12 +89,15 @@ docs                     Architecture, design, data, LLM, testing, ops, ADRs
 - [`docs/LLM_PIPELINE.md`](docs/LLM_PIPELINE.md) — generation, validation, fallback.
 - [`docs/TESTING.md`](docs/TESTING.md) — test strategy and manual checklist.
 - [`docs/OPERATIONS.md`](docs/OPERATIONS.md) — configuration, backup, troubleshooting.
+- [`docs/PRODUCTION_BASELINE.md`](docs/PRODUCTION_BASELINE.md) — verified MVP baseline and production plan.
 - [`docs/decisions/`](docs/decisions/) — architecture decision records.
 - [`AGENTS.md`](AGENTS.md) — rules for coding agents.
 
 ## Known MVP limitations
 
-- One party, one region pair, no movement simulation or map pathfinding.
+- One party. Six regions are implemented, but there is no movement simulation or map pathfinding.
+- Region threats are computed but do not yet alter content selection or combat.
+- Multi-stage storylines, research trees and advanced objectives remain production work (P3–P7).
 - No accounts, multiplayer, economy simulation, crafting, dialogue trees or permadeath.
 - No image, audio or animation systems.
 - The local model's generation can take 20–60 seconds; the UI keeps commands pending rather than pretending work is instantaneous.

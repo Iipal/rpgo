@@ -35,6 +35,10 @@ One world per player in the MVP. Fields: `id`, `player_id`, `turn`, `current_reg
 
 Fields: `id`, `world_id`, `name`, `description`, `level_min`, `level_max`, `status`, `threat_level`, `sort_order`. Status is constrained to discovery states.
 
+`threat_level` is recomputed (not incremented in place) from the region's completed and failed
+events: `min(10, baseThreat + floor(completed / 3) + floor(failed / 2))`. The base value comes from
+`data/regions.json`, so restoring a database and replaying the formula is safe.
+
 ### `locations`
 
 Fields: `id`, `region_id`, `name`, `description`, `status`, `discovered_turn`, `sort_order`. Location IDs are stable content IDs used by generation allowlists.
@@ -130,14 +134,33 @@ A repeated command returns the stored result with fresh read data. Receipts are 
 
 Application checks are the first defense; database constraints are the final defense.
 
-## 5. Migration policy
+## 5. Static content definitions
+
+Authored content is not stored in SQLite as definitions. `data/*.json` is the source of truth and is
+loaded by `packages/game-content` at import time.
+
+- `data/regions.json` has a `contentVersion` and a `regions` array.
+- Each region has a stable `id`, `version`, `tags`, level range, threat base, `eventTypes`,
+  `enemyFamilies`, `accessCondition`, reciprocal region `connections`, and four to eight locations.
+- Each location has a stable `id`, `version`, `tags`, reciprocal location `connections` and a
+  discovery status.
+- `data/enemies.json` gives every enemy a stable `id` and `family`; regions allowlist families.
+- `packages/game-content/src/schemas.ts` validates each file with Zod.
+- `findContentErrors` checks cross-file references: duplicate IDs, reciprocal connections, access
+  conditions, route events, enemy families, abilities, equipment and fallback content.
+- Invalid authored content throws at import time rather than producing a partially broken world.
+
+Persisted rows still copy display names and instance data where history must remain stable (for
+example inventory bonuses). Changing a definition does not rewrite historical instances.
+
+## 6. Migration policy
 
 - Add a new numbered file; never edit an applied migration.
 - Run from an empty database in tests.
 - Back up the SQLite file before applying migrations in a shared environment.
 - `schema_migrations` records each applied filename and timestamp.
 
-## 6. Deletion and retention
+## 7. Deletion and retention
 
 The MVP has no user deletion flow. For local reset, stop the server, back up the database, then remove `data/rpgo.sqlite` (and `-wal`/`-shm`). The next start reseeds a fresh world.
 

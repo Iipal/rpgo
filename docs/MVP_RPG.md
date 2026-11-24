@@ -830,6 +830,10 @@ Suggested endpoints:
 
 The exact route shape may change through ADRs, but each command must have a typed request/response schema and a single application use case.
 
+The implemented route set is recorded in
+[ADR-0007](decisions/ADR-0007-http-route-shape.md). It groups routes by aggregate (`/api/world`,
+`/api/party`, `/api/events`) and is asserted by `tests/http.test.ts`.
+
 Do not expose internal database rows as public API contracts.
 
 ---
@@ -893,7 +897,7 @@ Whenever implementation changes, the contributor/agent must:
 6. Update `CHANGELOG.md` where appropriate.
 7. Add a documentation checklist to the PR/agent completion template.
 
-Add lightweight CI checks for broken internal Markdown links and required documentation files. Do not attempt to infer all documentation changes automatically with fragile scripts. A human/agent checklist is the source of truth; CI provides guardrails.
+Add a lightweight local documentation check for broken internal Markdown links and required documentation files. Do not attempt to infer all documentation changes automatically with fragile scripts. A human/agent checklist is the source of truth; the check provides guardrails.
 
 ### 9.4 ADR format
 
@@ -969,7 +973,7 @@ Acceptance:
 - A new developer can clone, install, run, test, and build the project using README instructions.
 - Root and app `AGENTS.md` are clear and non-contradictory.
 - Empty database migrations run successfully.
-- CI or local verification catches missing docs and broken internal links.
+- Local verification catches missing docs and broken internal links.
 
 ### M1 — Game Foundation and Starter Party
 
@@ -1179,7 +1183,7 @@ Steps:
 9. Review all ADR statuses and add superseding ADRs if needed.
 10. Add a concise architecture diagram and end-to-end sequence diagram.
 11. Record known limitations and production expansion points.
-12. Tag the MVP baseline and record dependency/model versions.
+12. Record dependency and model versions for the MVP baseline.
 
 Acceptance:
 

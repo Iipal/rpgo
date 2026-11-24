@@ -4,6 +4,7 @@ import type {
   EventRow,
   ObjectiveRow,
 } from "../apps/server/src/infrastructure/database/repository";
+import { Repository } from "../apps/server/src/infrastructure/database/repository";
 import { deriveCharacterStats } from "../packages/game-rules/src";
 import { createTestService, type TestService } from "./helpers";
 
@@ -284,5 +285,49 @@ describe("event lifecycle", () => {
     };
     expect(harness.repo.insertWorldAction(row)).toBe(true);
     expect(harness.repo.insertWorldAction({ ...row, id: crypto.randomUUID() })).toBe(false);
+  });
+
+  test("completed battles are immutable across retries and reloads", async () => {
+    const { repo } = harness;
+    boostParty();
+    const id = insertAuthoredEvent({
+      title: "The Sealed Report",
+      encounters: [[{ templateId: "forest_wolf", count: 1, behaviorId: "enemy_skirmisher" }]],
+    });
+    await harness.service.acceptEvent(id, "sealed-accept-0001", "corr");
+    const first = await harness.service.resolveEvent(id, "sealed-resolve-0001", "corr");
+    expect(first.report?.outcome).toBe("victory");
+
+    const battle = repo.getBattle(id, 0);
+    if (!battle) throw new Error("battle missing");
+    const snapshot = JSON.stringify(battle);
+
+    await expect(harness.service.resolveEvent(id, "sealed-resolve-0002", "corr")).rejects.toThrow(
+      /not active/i,
+    );
+
+    expect(JSON.stringify(repo.getBattle(id, 0))).toBe(snapshot);
+    expect(repo.listBattles(id)).toHaveLength(1);
+    const reloaded = new Repository(harness.db);
+    expect(JSON.stringify(reloaded.getBattle(id, 0))).toBe(snapshot);
+  });
+
+  test("equipment persists when the read model is rebuilt", async () => {
+    const party = harness.service.getParty();
+    const warrior = party.party.members.find((member) => member.archetype === "warrior");
+    const chainMail = party.inventory.find((item) => item.definitionId === "chain_mail");
+    if (!warrior || !chainMail) throw new Error("starter fixtures missing");
+
+    await harness.service.equip(warrior.id, chainMail.instanceId, "equip-reload-0001");
+
+    const reloaded = new Repository(harness.db);
+    const partyRow = reloaded.getParty();
+    if (!partyRow) throw new Error("party missing");
+    const equipped = reloaded.getAllEquipped(partyRow.id);
+    expect(equipped.some((item) => item.character_id === warrior.id)).toBe(true);
+    expect(
+      harness.service.getParty().party.members.find((member) => member.id === warrior.id)?.equipment
+        .armor?.definitionId,
+    ).toBe("chain_mail");
   });
 });

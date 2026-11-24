@@ -11,6 +11,8 @@ are historical records. To change a decision, add a new ADR and mark the old one
 | [0004](ADR-0004-seeded-combat.md)            | Seeded, automatic, immutable combat                              | Accepted |
 | [0005](ADR-0005-idempotent-commands.md)      | Idempotent commands with operation IDs and receipts              | Accepted |
 | [0006](ADR-0006-sqlite-migrations.md)        | SQLite with ordered SQL migrations and a hand-written repository | Accepted |
+| [0007](ADR-0007-http-route-shape.md)         | HTTP routes grouped by aggregate                                 | Accepted |
+| [0008](ADR-0008-versioned-static-content.md) | Versioned static content with fail-fast reference validation     | Accepted |
 
 ## Template
 

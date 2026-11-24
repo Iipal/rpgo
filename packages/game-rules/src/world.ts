@@ -1,5 +1,5 @@
 import { deriveStats } from "./character";
-import type { DifficultyBand, EnemyTemplate } from "./types";
+import type { DifficultyBand, DiscoveryStatus, EnemyTemplate } from "./types";
 
 export const WORLD_ADVANCING_ACTIONS = [
   "event_accepted",
@@ -59,4 +59,38 @@ export function nextLocationStatus(
   if (current === "unknown") return "discovered";
   if (current === "discovered") return "accessible";
   return null;
+}
+
+export const DISCOVERY_RANK: Record<DiscoveryStatus, number> = {
+  unknown: 0,
+  discovered: 1,
+  accessible: 2,
+};
+
+/**
+ * A region follows its locations: knowing one location makes the region known,
+ * and an accessible location opens the region. The result may be lower than the
+ * current status; callers must only move a status forward.
+ */
+export function deriveRegionStatus(locationStatuses: DiscoveryStatus[]): DiscoveryStatus {
+  if (locationStatuses.some((status) => status === "accessible")) return "accessible";
+  if (locationStatuses.some((status) => status === "discovered")) return "discovered";
+  return "unknown";
+}
+
+/** Threat rises with activity in a region. Recomputed from totals so it is idempotent. */
+export const THREAT_COMPLETIONS_PER_STEP = 3;
+export const THREAT_FAILURES_PER_STEP = 2;
+export const MAX_THREAT = 10;
+
+export function threatLevelForOutcomes(
+  completed: number,
+  failed: number,
+  baseThreat: number,
+): number {
+  const base = Math.max(0, Math.min(MAX_THREAT, Math.floor(baseThreat)));
+  const steps =
+    Math.floor(Math.max(0, completed) / THREAT_COMPLETIONS_PER_STEP) +
+    Math.floor(Math.max(0, failed) / THREAT_FAILURES_PER_STEP);
+  return Math.min(MAX_THREAT, base + steps);
 }

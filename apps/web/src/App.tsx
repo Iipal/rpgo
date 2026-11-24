@@ -63,14 +63,26 @@ const navigation = [
 
 const sectionCopy: Record<View["kind"], { title: string; blurb: string }> = {
   world: { title: "World", blurb: "Greenreach and the frontier beyond" },
-  events: { title: "Event board", blurb: "Contracts, rumours and opportunities" },
-  event: { title: "Contract", blurb: "Review the brief before committing the company" },
+  events: {
+    title: "Event board",
+    blurb: "Contracts, rumours and opportunities",
+  },
+  event: {
+    title: "Contract",
+    blurb: "Review the brief before committing the company",
+  },
   party: { title: "Party", blurb: "The Grey Company roster" },
-  character: { title: "Character", blurb: "Attributes, equipment and battle behaviour" },
+  character: {
+    title: "Character",
+    blurb: "Attributes, equipment and battle behaviour",
+  },
   inventory: { title: "Inventory", blurb: "Company stores and equipped gear" },
   journal: { title: "Journal", blurb: "A record of the company's deeds" },
   battle: { title: "Battle report", blurb: "Deterministic encounter results" },
-  diagnostics: { title: "Diagnostics", blurb: "Local model and persistence health" },
+  diagnostics: {
+    title: "Diagnostics",
+    blurb: "Local model and persistence health",
+  },
 };
 
 function errorMessage(error: unknown): string {
@@ -582,7 +594,7 @@ export function App() {
           </div>
         ) : null}
 
-        {health?.llm.fallbackActive ? (
+        {health?.llm.fallbackActive && !health.llm.enabled ? (
           <div className="notice notice-warn">
             <GiTechnoHeart aria-hidden="true" />
             The local model is unavailable or its last generation failed. You are seeing authored

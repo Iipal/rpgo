@@ -1,52 +1,401 @@
 {
+  "contentVersion": 2,
   "regions": [
     {
       "id": "greenreach",
+      "version": 1,
+      "tags": ["frontier", "forest", "starter"],
       "name": "Greenreach",
       "description": "A quiet frontier of thatched villages, old roads, and woods that remember older names.",
       "levelRange": { "min": 1, "max": 3 },
       "status": "accessible",
       "threatLevel": 1,
+      "eventTypes": ["dungeon", "scout", "research", "attack"],
+      "enemyFamilies": ["beast", "goblin", "bandit"],
+      "accessCondition": { "kind": "start" },
+      "connections": [{ "toRegionId": "ashen_march", "status": "known" }],
       "locations": [
         {
           "id": "thornbury",
+          "version": 1,
+          "tags": ["safe", "village"],
           "name": "Thornbury Village",
           "description": "A market village of timber and stone. The guild board stands beside the well.",
-          "status": "accessible"
+          "status": "accessible",
+          "connections": ["old_road"]
         },
         {
           "id": "old_road",
+          "version": 1,
+          "tags": ["road", "trade"],
           "name": "The Old Road",
           "description": "A moss-grown trade road. Wagons once crossed here; now only hoofprints and rumours.",
-          "status": "discovered"
+          "status": "discovered",
+          "connections": ["thornbury", "whispering_wood", "harvest_fields"]
         },
         {
           "id": "whispering_wood",
+          "version": 1,
+          "tags": ["forest", "hunt"],
           "name": "Whispering Wood",
           "description": "Birch and bramble press close. Something moves between the trunks.",
-          "status": "discovered"
+          "status": "discovered",
+          "connections": ["old_road", "barrow_hill"]
+        },
+        {
+          "id": "harvest_fields",
+          "version": 1,
+          "tags": ["fields", "farmland"],
+          "name": "Harvest Fields",
+          "description": "Striped furrows run toward the treeline. Scarecrows stand guard over empty ground.",
+          "status": "discovered",
+          "connections": ["old_road", "barrow_hill"]
+        },
+        {
+          "id": "barrow_hill",
+          "version": 1,
+          "tags": ["ruin", "barrow"],
+          "name": "Barrow Hill",
+          "description": "A bald hill crowned with leaning stones. The grass grows thin over old graves.",
+          "status": "unknown",
+          "connections": ["whispering_wood", "harvest_fields"]
         }
       ]
     },
     {
       "id": "ashen_march",
+      "version": 1,
+      "tags": ["frontier", "ruins", "ash"],
       "name": "Ashen March",
       "description": "A grey frontier of burned fields, broken walls, and things that do not sleep.",
       "levelRange": { "min": 3, "max": 6 },
       "status": "unknown",
       "threatLevel": 3,
+      "eventTypes": ["dungeon", "scout", "research", "attack"],
+      "enemyFamilies": ["undead", "cult", "construct"],
+      "accessCondition": {
+        "kind": "scout",
+        "fromRegionId": "greenreach",
+        "targetLocationId": "ashen_gate"
+      },
+      "connections": [
+        { "toRegionId": "greenreach", "status": "known" },
+        { "toRegionId": "frostmere", "status": "unknown" }
+      ],
       "locations": [
         {
-          "id": "ruined_watchtower",
-          "name": "Ruined Watchtower",
-          "description": "A broken tower on a bald hill. Its beacon has been dark for a generation.",
-          "status": "unknown"
-        },
-        {
           "id": "ashen_gate",
+          "version": 1,
+          "tags": ["gate", "frontier"],
           "name": "The Ashen Gate",
           "description": "A blackened gatehouse half-swallowed by the march. Cold air drifts through it.",
-          "status": "unknown"
+          "status": "unknown",
+          "connections": ["ruined_watchtower", "ember_fords"]
+        },
+        {
+          "id": "ruined_watchtower",
+          "version": 1,
+          "tags": ["ruin", "watch"],
+          "name": "Ruined Watchtower",
+          "description": "A broken tower on a bald hill. Its beacon has been dark for a generation.",
+          "status": "unknown",
+          "connections": ["ashen_gate", "bonefield"]
+        },
+        {
+          "id": "ember_fords",
+          "version": 1,
+          "tags": ["ford", "ash"],
+          "name": "Ember Fords",
+          "description": "Shallow water runs warm over black stones. The crossing hisses underfoot.",
+          "status": "unknown",
+          "connections": ["ashen_gate", "cinder_shrine"]
+        },
+        {
+          "id": "bonefield",
+          "version": 1,
+          "tags": ["battlefield", "undead"],
+          "name": "The Bonefield",
+          "description": "A plain of broken spears and pale shards. Nothing has been buried here for years.",
+          "status": "unknown",
+          "connections": ["ruined_watchtower", "cinder_shrine"]
+        },
+        {
+          "id": "cinder_shrine",
+          "version": 1,
+          "tags": ["shrine", "cult"],
+          "name": "Cinder Shrine",
+          "description": "A squat stone shrine crusted with soot. Offerings of ash sit before a faceless idol.",
+          "status": "unknown",
+          "connections": ["ember_fords", "bonefield"]
+        }
+      ]
+    },
+    {
+      "id": "frostmere",
+      "version": 1,
+      "tags": ["cold", "lake", "highland"],
+      "name": "Frostmere",
+      "description": "A highland lake country of grey water, frozen reeds, and chapels built for a faith that left.",
+      "levelRange": { "min": 5, "max": 8 },
+      "status": "unknown",
+      "threatLevel": 5,
+      "eventTypes": ["dungeon", "scout", "research", "attack"],
+      "enemyFamilies": ["beast", "undead", "giant"],
+      "accessCondition": {
+        "kind": "scout",
+        "fromRegionId": "ashen_march",
+        "targetLocationId": "frostmere_shore"
+      },
+      "connections": [
+        { "toRegionId": "ashen_march", "status": "unknown" },
+        { "toRegionId": "sunken_coast", "status": "unknown" }
+      ],
+      "locations": [
+        {
+          "id": "frostmere_shore",
+          "version": 1,
+          "tags": ["lake", "shore"],
+          "name": "Frostmere Shore",
+          "description": "Grey water laps at a shingle beach. Reeds stand frozen in the shallows.",
+          "status": "unknown",
+          "connections": ["frozen_jetty", "rimewood"]
+        },
+        {
+          "id": "frozen_jetty",
+          "version": 1,
+          "tags": ["jetty", "water"],
+          "name": "The Frozen Jetty",
+          "description": "A rotting pier extends into the lake, its pilings sheathed in clear ice.",
+          "status": "unknown",
+          "connections": ["frostmere_shore", "ice_chapel"]
+        },
+        {
+          "id": "rimewood",
+          "version": 1,
+          "tags": ["forest", "cold"],
+          "name": "Rimewood",
+          "description": "Black pines carry white frost all year. Tracks in the snow do not belong to deer.",
+          "status": "unknown",
+          "connections": ["frostmere_shore", "drowned_barrow"]
+        },
+        {
+          "id": "ice_chapel",
+          "version": 1,
+          "tags": ["chapel", "ruin"],
+          "name": "The Ice Chapel",
+          "description": "A stone chapel roofed with frozen rain. Hymns seem to hang in the cold air.",
+          "status": "unknown",
+          "connections": ["frozen_jetty", "drowned_barrow"]
+        },
+        {
+          "id": "drowned_barrow",
+          "version": 1,
+          "tags": ["barrow", "undead"],
+          "name": "The Drowned Barrow",
+          "description": "A burial mound half-submerged in the mere. Pale roots twist through its stones.",
+          "status": "unknown",
+          "connections": ["rimewood", "ice_chapel"]
+        }
+      ]
+    },
+    {
+      "id": "sunken_coast",
+      "version": 1,
+      "tags": ["coast", "sea", "smuggler"],
+      "name": "Sunken Coast",
+      "description": "A drowned shoreline of broken harbours, salt marsh, and lights that move beneath the tide.",
+      "levelRange": { "min": 7, "max": 10 },
+      "status": "unknown",
+      "threatLevel": 6,
+      "eventTypes": ["dungeon", "scout", "research", "attack"],
+      "enemyFamilies": ["drowned", "beast", "cult"],
+      "accessCondition": {
+        "kind": "scout",
+        "fromRegionId": "frostmere",
+        "targetLocationId": "tidewreck_harbor"
+      },
+      "connections": [
+        { "toRegionId": "frostmere", "status": "unknown" },
+        { "toRegionId": "emberdeep", "status": "unknown" }
+      ],
+      "locations": [
+        {
+          "id": "tidewreck_harbor",
+          "version": 1,
+          "tags": ["harbor", "ruin"],
+          "name": "Tidewreck Harbor",
+          "description": "Shattered quays and beached hulls mark a harbour the sea has reclaimed.",
+          "status": "unknown",
+          "connections": ["salt_marsh", "drowned_lighthouse"]
+        },
+        {
+          "id": "salt_marsh",
+          "version": 1,
+          "tags": ["marsh", "salt"],
+          "name": "The Salt Marsh",
+          "description": "Channels of brine cut through grey mud. Something heavy drags itself between the reeds.",
+          "status": "unknown",
+          "connections": ["tidewreck_harbor", "smuggler_coves"]
+        },
+        {
+          "id": "drowned_lighthouse",
+          "version": 1,
+          "tags": ["lighthouse", "sea"],
+          "name": "The Drowned Lighthouse",
+          "description": "Only the top of the tower shows above the water. Its lamp still burns green at night.",
+          "status": "unknown",
+          "connections": ["tidewreck_harbor", "leviathan_shoal"]
+        },
+        {
+          "id": "smuggler_coves",
+          "version": 1,
+          "tags": ["cove", "smuggler"],
+          "name": "Smuggler Coves",
+          "description": "Sea caves hide old crates and newer footprints. A narrow stair climbs toward the hills.",
+          "status": "unknown",
+          "connections": ["salt_marsh", "leviathan_shoal"]
+        },
+        {
+          "id": "leviathan_shoal",
+          "version": 1,
+          "tags": ["sea", "shoal"],
+          "name": "Leviathan Shoal",
+          "description": "Black bones break the surface at low tide. The water between them is very still.",
+          "status": "unknown",
+          "connections": ["drowned_lighthouse", "smuggler_coves"]
+        }
+      ]
+    },
+    {
+      "id": "emberdeep",
+      "version": 1,
+      "tags": ["volcanic", "mine", "forge"],
+      "name": "Emberdeep",
+      "description": "A volcanic hollow of slag hills, old forges, and a market that never sees daylight.",
+      "levelRange": { "min": 9, "max": 12 },
+      "status": "unknown",
+      "threatLevel": 7,
+      "eventTypes": ["dungeon", "scout", "research", "attack"],
+      "enemyFamilies": ["beast", "construct", "cult"],
+      "accessCondition": {
+        "kind": "scout",
+        "fromRegionId": "sunken_coast",
+        "targetLocationId": "ember_gate"
+      },
+      "connections": [
+        { "toRegionId": "sunken_coast", "status": "unknown" },
+        { "toRegionId": "hollow_crown", "status": "unknown" }
+      ],
+      "locations": [
+        {
+          "id": "ember_gate",
+          "version": 1,
+          "tags": ["gate", "volcanic"],
+          "name": "The Ember Gate",
+          "description": "A basalt arch breathes warm air from the dark. Chains hang slack across its threshold.",
+          "status": "unknown",
+          "connections": ["cinder_market", "forge_halls"]
+        },
+        {
+          "id": "cinder_market",
+          "version": 1,
+          "tags": ["market", "settlement"],
+          "name": "Cinder Market",
+          "description": "Stalls of black iron crowd a cavern lit by lava channels. Nobody asks where the goods came from.",
+          "status": "unknown",
+          "connections": ["ember_gate", "slag_pits"]
+        },
+        {
+          "id": "forge_halls",
+          "version": 1,
+          "tags": ["forge", "construct"],
+          "name": "The Forge Halls",
+          "description": "Rows of cold anvils stretch into the smoke. Something still works the bellows.",
+          "status": "unknown",
+          "connections": ["ember_gate", "magma_core"]
+        },
+        {
+          "id": "slag_pits",
+          "version": 1,
+          "tags": ["mine", "slag"],
+          "name": "The Slag Pits",
+          "description": "Terrace after terrace of cooling rock. Hound tracks circle the rim.",
+          "status": "unknown",
+          "connections": ["cinder_market", "magma_core"]
+        },
+        {
+          "id": "magma_core",
+          "version": 1,
+          "tags": ["volcanic", "core"],
+          "name": "The Magma Core",
+          "description": "A lake of slow fire lights a cathedral of stone. The heat presses the breath from your lungs.",
+          "status": "unknown",
+          "connections": ["forge_halls", "slag_pits"]
+        }
+      ]
+    },
+    {
+      "id": "hollow_crown",
+      "version": 1,
+      "tags": ["ruins", "court", "endgame"],
+      "name": "The Hollow Crown",
+      "description": "A dead kingdom of glass fields and silent courts, where an empty throne still expects tribute.",
+      "levelRange": { "min": 11, "max": 15 },
+      "status": "unknown",
+      "threatLevel": 8,
+      "eventTypes": ["dungeon", "scout", "research", "attack"],
+      "enemyFamilies": ["construct", "undead", "cult"],
+      "accessCondition": {
+        "kind": "scout",
+        "fromRegionId": "emberdeep",
+        "targetLocationId": "crown_threshold"
+      },
+      "connections": [{ "toRegionId": "emberdeep", "status": "unknown" }],
+      "locations": [
+        {
+          "id": "crown_threshold",
+          "version": 1,
+          "tags": ["threshold", "ruin"],
+          "name": "The Crown Threshold",
+          "description": "A road of white stone crosses a plain of shattered glass toward a distant palace.",
+          "status": "unknown",
+          "connections": ["glass_fields", "silent_court"]
+        },
+        {
+          "id": "glass_fields",
+          "version": 1,
+          "tags": ["glass", "field"],
+          "name": "The Glass Fields",
+          "description": "Acres of fused glass reflect a sky that never changes. Footsteps ring like bells.",
+          "status": "unknown",
+          "connections": ["crown_threshold", "reliquary"]
+        },
+        {
+          "id": "silent_court",
+          "version": 1,
+          "tags": ["court", "ruin"],
+          "name": "The Silent Court",
+          "description": "A colonnade of pale statues surrounds a dry fountain. None of the faces are finished.",
+          "status": "unknown",
+          "connections": ["crown_threshold", "empty_throne"]
+        },
+        {
+          "id": "reliquary",
+          "version": 1,
+          "tags": ["reliquary", "treasure"],
+          "name": "The Reliquary",
+          "description": "Sealed cases line a vault of black marble. Something inside each one is still moving.",
+          "status": "unknown",
+          "connections": ["glass_fields", "empty_throne"]
+        },
+        {
+          "id": "empty_throne",
+          "version": 1,
+          "tags": ["throne", "endgame"],
+          "name": "The Empty Throne",
+          "description": "A crown of rusted iron hangs above a seat of glass. The hall waits for a ruler who never returns.",
+          "status": "unknown",
+          "connections": ["silent_court", "reliquary"]
         }
       ]
     }

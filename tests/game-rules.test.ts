@@ -3,9 +3,13 @@ import { abilityById, starterParty } from "../packages/game-content/src";
 import {
   applyExperience,
   type CombatantInput,
+  clampDifficultyBand,
+  clampRarity,
+  computeRewardPlan,
   createRng,
   deriveCharacterStats,
   hashSeed,
+  isDifficultyAllowed,
   nextLocationStatus,
   simulateBattle,
   xpToNextLevel,
@@ -158,5 +162,54 @@ describe("deterministic combat", () => {
         }
       }
     }
+  });
+});
+
+describe("reward plans", () => {
+  test("derives amounts from band and event type", () => {
+    expect(computeRewardPlan([], "normal", "dungeon")).toEqual({
+      gold: 77,
+      experiencePerCharacter: 41,
+      researchPoints: 0,
+      equipment: [],
+    });
+    expect(computeRewardPlan([], "hard", "attack").gold).toBe(114);
+    expect(computeRewardPlan([], "hard", "attack").experiencePerCharacter).toBe(75);
+    expect(computeRewardPlan([{ kind: "gold" }], "easy", "scout").gold).toBe(21);
+    expect(computeRewardPlan([], "easy", "scout").gold).toBe(0);
+    expect(computeRewardPlan([], "normal", "research").researchPoints).toBe(14);
+    expect(computeRewardPlan([], "normal", "research").gold).toBe(0);
+  });
+
+  test("caps equipment count and clamps rarity to the band", () => {
+    const easy = computeRewardPlan(
+      [
+        { kind: "equipment", rarity: "rare" },
+        { kind: "equipment", rarity: "rare" },
+      ],
+      "easy",
+      "dungeon",
+    );
+    expect(easy.equipment).toHaveLength(1);
+    expect(easy.equipment[0]?.rarity).toBe("common");
+
+    const hard = computeRewardPlan(
+      [
+        { kind: "equipment", rarity: "common" },
+        { kind: "equipment", rarity: "rare" },
+        { kind: "equipment", rarity: "uncommon" },
+      ],
+      "hard",
+      "attack",
+    );
+    expect(hard.equipment).toEqual([{ rarity: "uncommon" }, { rarity: "rare" }]);
+    expect(clampRarity("rare", "normal")).toBe("uncommon");
+  });
+
+  test("hard difficulty requires a level two party", () => {
+    expect(isDifficultyAllowed("hard", 1)).toBe(false);
+    expect(isDifficultyAllowed("hard", 2)).toBe(true);
+    expect(clampDifficultyBand("hard", 1)).toBe("normal");
+    expect(clampDifficultyBand("hard", 2)).toBe("hard");
   });
 });

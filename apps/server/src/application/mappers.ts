@@ -213,24 +213,52 @@ export function worldDto(
   regions: RegionRow[],
   locations: LocationRow[],
 ): WorldDto {
-  const regionDtos: RegionDto[] = regions.map((region) => ({
-    id: region.id,
-    name: region.name,
-    description: region.description,
-    levelRange: { min: region.level_min, max: region.level_max },
-    status: region.status,
-    threatLevel: region.threat_level,
-    locations: locations
-      .filter((location) => location.region_id === region.id)
-      .map<LocationDto>((location) => ({
-        id: location.id,
-        regionId: location.region_id,
-        name: location.name,
-        description: location.description,
-        status: location.status,
-        discoveredTurn: location.discovered_turn,
-      })),
-  }));
+  const regionRows = new Map(regions.map((region) => [region.id, region]));
+  const regionDtos: RegionDto[] = regions.map((region) => {
+    const definition = regionById[region.id];
+    return {
+      id: region.id,
+      name: region.name,
+      description: region.description,
+      levelRange: { min: region.level_min, max: region.level_max },
+      status: region.status,
+      threatLevel: region.threat_level,
+      tags: definition?.tags ?? [],
+      connections: (definition?.connections ?? []).map((connection) => {
+        const target = regionRows.get(connection.toRegionId);
+        const status =
+          connection.status === "blocked"
+            ? "blocked"
+            : target?.status === "accessible"
+              ? "open"
+              : target?.status === "discovered"
+                ? "known"
+                : "unknown";
+        return {
+          regionId: connection.toRegionId,
+          name: regionById[connection.toRegionId]?.name ?? target?.name ?? connection.toRegionId,
+          status,
+        };
+      }),
+      locations: locations
+        .filter((location) => location.region_id === region.id)
+        .map<LocationDto>((location) => {
+          const locationDefinition = definition?.locations.find(
+            (candidate) => candidate.id === location.id,
+          );
+          return {
+            id: location.id,
+            regionId: location.region_id,
+            name: location.name,
+            description: location.description,
+            status: location.status,
+            discoveredTurn: location.discovered_turn,
+            tags: locationDefinition?.tags ?? [],
+            connectedLocationIds: locationDefinition?.connections ?? [],
+          };
+        }),
+    };
+  });
   return {
     id: world.id,
     turn: world.turn,

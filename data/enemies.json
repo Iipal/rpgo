@@ -5,8 +5,14 @@
       "name": "Forest Wolf",
       "description": "A lean grey wolf with yellow eyes.",
       "level": 1,
+      "family": "beast",
       "behaviorId": "enemy_skirmisher",
-      "attributes": { "strength": 4, "agility": 7, "intelligence": 1, "vitality": 4 },
+      "attributes": {
+        "strength": 4,
+        "agility": 7,
+        "intelligence": 1,
+        "vitality": 4
+      },
       "abilityIds": ["enemy_claw"],
       "row": "front"
     },
@@ -15,8 +21,14 @@
       "name": "Goblin Scout",
       "description": "A wiry goblin with a notched blade.",
       "level": 1,
+      "family": "goblin",
       "behaviorId": "enemy_skirmisher",
-      "attributes": { "strength": 4, "agility": 6, "intelligence": 3, "vitality": 4 },
+      "attributes": {
+        "strength": 4,
+        "agility": 6,
+        "intelligence": 3,
+        "vitality": 4
+      },
       "abilityIds": ["enemy_claw", "enemy_envenom"],
       "row": "front"
     },
@@ -25,8 +37,14 @@
       "name": "Goblin Brute",
       "description": "A broad goblin carrying a split-hafted maul.",
       "level": 2,
+      "family": "goblin",
       "behaviorId": "enemy_brute",
-      "attributes": { "strength": 8, "agility": 3, "intelligence": 1, "vitality": 7 },
+      "attributes": {
+        "strength": 8,
+        "agility": 3,
+        "intelligence": 1,
+        "vitality": 7
+      },
       "abilityIds": ["enemy_heavy", "enemy_sunder"],
       "row": "front"
     },
@@ -35,8 +53,14 @@
       "name": "Bandit Thug",
       "description": "A road robber in patched leathers.",
       "level": 1,
+      "family": "bandit",
       "behaviorId": "enemy_brute",
-      "attributes": { "strength": 6, "agility": 4, "intelligence": 2, "vitality": 5 },
+      "attributes": {
+        "strength": 6,
+        "agility": 4,
+        "intelligence": 2,
+        "vitality": 5
+      },
       "abilityIds": ["enemy_heavy"],
       "row": "front"
     },
@@ -45,8 +69,14 @@
       "name": "Bandit Archer",
       "description": "A bandit with a hunting bow and a bad temper.",
       "level": 1,
+      "family": "bandit",
       "behaviorId": "enemy_skirmisher",
-      "attributes": { "strength": 4, "agility": 7, "intelligence": 3, "vitality": 4 },
+      "attributes": {
+        "strength": 4,
+        "agility": 7,
+        "intelligence": 3,
+        "vitality": 4
+      },
       "abilityIds": ["enemy_claw"],
       "row": "back"
     },
@@ -55,8 +85,14 @@
       "name": "Skeleton Warrior",
       "description": "Old bones held together by older spite.",
       "level": 2,
+      "family": "undead",
       "behaviorId": "enemy_brute",
-      "attributes": { "strength": 7, "agility": 3, "intelligence": 1, "vitality": 6 },
+      "attributes": {
+        "strength": 7,
+        "agility": 3,
+        "intelligence": 1,
+        "vitality": 6
+      },
       "abilityIds": ["enemy_heavy", "enemy_sunder"],
       "row": "front"
     },
@@ -65,8 +101,14 @@
       "name": "Cultist",
       "description": "A hooded figure muttering to something unseen.",
       "level": 2,
+      "family": "cult",
       "behaviorId": "enemy_caster",
-      "attributes": { "strength": 2, "agility": 4, "intelligence": 8, "vitality": 4 },
+      "attributes": {
+        "strength": 2,
+        "agility": 4,
+        "intelligence": 8,
+        "vitality": 4
+      },
       "abilityIds": ["enemy_bolt", "enemy_envenom"],
       "row": "back"
     },
@@ -75,8 +117,14 @@
       "name": "Ruin Wraith",
       "description": "A smear of cold air and half-remembered pain.",
       "level": 3,
+      "family": "undead",
       "behaviorId": "enemy_caster",
-      "attributes": { "strength": 3, "agility": 6, "intelligence": 9, "vitality": 5 },
+      "attributes": {
+        "strength": 3,
+        "agility": 6,
+        "intelligence": 9,
+        "vitality": 5
+      },
       "abilityIds": ["enemy_bolt", "enemy_sunder"],
       "row": "back"
     },
@@ -85,8 +133,14 @@
       "name": "Dire Boar",
       "description": "A bristling mass of muscle and tusk.",
       "level": 2,
+      "family": "beast",
       "behaviorId": "enemy_brute",
-      "attributes": { "strength": 9, "agility": 3, "intelligence": 1, "vitality": 8 },
+      "attributes": {
+        "strength": 9,
+        "agility": 3,
+        "intelligence": 1,
+        "vitality": 8
+      },
       "abilityIds": ["enemy_heavy"],
       "row": "front"
     },
@@ -95,8 +149,14 @@
       "name": "Bandit Captain",
       "description": "Scarred, armoured, and clearly in charge.",
       "level": 3,
+      "family": "bandit",
       "behaviorId": "enemy_brute",
-      "attributes": { "strength": 9, "agility": 5, "intelligence": 4, "vitality": 8 },
+      "attributes": {
+        "strength": 9,
+        "agility": 5,
+        "intelligence": 4,
+        "vitality": 8
+      },
       "abilityIds": ["enemy_heavy", "enemy_sunder"],
       "row": "front"
     },
@@ -105,8 +165,14 @@
       "name": "Cult Adept",
       "description": "A chant-leader of the ashen cult.",
       "level": 3,
+      "family": "cult",
       "behaviorId": "enemy_support",
-      "attributes": { "strength": 2, "agility": 4, "intelligence": 9, "vitality": 5 },
+      "attributes": {
+        "strength": 2,
+        "agility": 4,
+        "intelligence": 9,
+        "vitality": 5
+      },
       "abilityIds": ["enemy_bolt", "enemy_heal"],
       "row": "back"
     },
@@ -115,10 +181,208 @@
       "name": "Ash Warden",
       "description": "A towering figure of charred plate and ember light.",
       "level": 4,
+      "family": "undead",
       "behaviorId": "enemy_brute",
-      "attributes": { "strength": 11, "agility": 4, "intelligence": 5, "vitality": 10 },
+      "attributes": {
+        "strength": 11,
+        "agility": 4,
+        "intelligence": 5,
+        "vitality": 10
+      },
       "abilityIds": ["enemy_heavy", "enemy_sunder"],
       "row": "front"
+    },
+    {
+      "id": "frost_wolf",
+      "name": "Frost Wolf",
+      "description": "A pale wolf with ice in its fur and eyes like winter stars.",
+      "level": 5,
+      "family": "beast",
+      "behaviorId": "enemy_skirmisher",
+      "attributes": {
+        "strength": 7,
+        "agility": 12,
+        "intelligence": 2,
+        "vitality": 7
+      },
+      "abilityIds": ["enemy_claw", "enemy_envenom"],
+      "row": "front"
+    },
+    {
+      "id": "rime_revenant",
+      "name": "Rime Revenant",
+      "description": "A frozen corpse in rusted mail, moving with stiff purpose.",
+      "level": 6,
+      "family": "undead",
+      "behaviorId": "enemy_brute",
+      "attributes": {
+        "strength": 12,
+        "agility": 5,
+        "intelligence": 4,
+        "vitality": 11
+      },
+      "abilityIds": ["enemy_heavy", "enemy_sunder"],
+      "row": "front"
+    },
+    {
+      "id": "frost_troll",
+      "name": "Frost Troll",
+      "description": "A hulking shape of blue-grey hide and icicle tusks.",
+      "level": 7,
+      "family": "giant",
+      "behaviorId": "enemy_brute",
+      "attributes": {
+        "strength": 15,
+        "agility": 4,
+        "intelligence": 2,
+        "vitality": 14
+      },
+      "abilityIds": ["enemy_heavy", "enemy_sunder"],
+      "row": "front"
+    },
+    {
+      "id": "drowned_corsair",
+      "name": "Drowned Corsair",
+      "description": "A waterlogged sailor with barnacles on his blade.",
+      "level": 7,
+      "family": "drowned",
+      "behaviorId": "enemy_skirmisher",
+      "attributes": {
+        "strength": 11,
+        "agility": 10,
+        "intelligence": 4,
+        "vitality": 9
+      },
+      "abilityIds": ["enemy_claw", "enemy_heavy"],
+      "row": "front"
+    },
+    {
+      "id": "reef_stalker",
+      "name": "Reef Stalker",
+      "description": "A long-limbed predator that hunts between the tide pools.",
+      "level": 7,
+      "family": "beast",
+      "behaviorId": "enemy_skirmisher",
+      "attributes": {
+        "strength": 9,
+        "agility": 12,
+        "intelligence": 2,
+        "vitality": 9
+      },
+      "abilityIds": ["enemy_claw", "enemy_envenom"],
+      "row": "front"
+    },
+    {
+      "id": "tide_witch",
+      "name": "Tide Witch",
+      "description": "A brine-soaked seer chanting to the water.",
+      "level": 8,
+      "family": "cult",
+      "behaviorId": "enemy_support",
+      "attributes": {
+        "strength": 3,
+        "agility": 6,
+        "intelligence": 15,
+        "vitality": 8
+      },
+      "abilityIds": ["enemy_bolt", "enemy_heal"],
+      "row": "back"
+    },
+    {
+      "id": "cinder_hound",
+      "name": "Cinder Hound",
+      "description": "A lean hound of black fur and banked embers.",
+      "level": 9,
+      "family": "beast",
+      "behaviorId": "enemy_skirmisher",
+      "attributes": {
+        "strength": 12,
+        "agility": 13,
+        "intelligence": 3,
+        "vitality": 10
+      },
+      "abilityIds": ["enemy_claw", "enemy_envenom"],
+      "row": "front"
+    },
+    {
+      "id": "forge_golem",
+      "name": "Forge Golem",
+      "description": "An anvil-shouldered construct still carrying its smith’s tools.",
+      "level": 10,
+      "family": "construct",
+      "behaviorId": "enemy_brute",
+      "attributes": {
+        "strength": 18,
+        "agility": 4,
+        "intelligence": 3,
+        "vitality": 18
+      },
+      "abilityIds": ["enemy_heavy", "enemy_sunder"],
+      "row": "front"
+    },
+    {
+      "id": "ember_priest",
+      "name": "Ember Priest",
+      "description": "A soot-blackened cultist who reads the future in molten metal.",
+      "level": 10,
+      "family": "cult",
+      "behaviorId": "enemy_caster",
+      "attributes": {
+        "strength": 4,
+        "agility": 6,
+        "intelligence": 16,
+        "vitality": 10
+      },
+      "abilityIds": ["enemy_bolt", "enemy_heal"],
+      "row": "back"
+    },
+    {
+      "id": "glass_knight",
+      "name": "Glass Knight",
+      "description": "A knight of fused glass, its armour full of trapped reflections.",
+      "level": 11,
+      "family": "construct",
+      "behaviorId": "enemy_brute",
+      "attributes": {
+        "strength": 19,
+        "agility": 7,
+        "intelligence": 6,
+        "vitality": 16
+      },
+      "abilityIds": ["enemy_heavy", "enemy_sunder"],
+      "row": "front"
+    },
+    {
+      "id": "crown_wraith",
+      "name": "Crown Wraith",
+      "description": "A royal absence wearing a broken diadem.",
+      "level": 12,
+      "family": "undead",
+      "behaviorId": "enemy_caster",
+      "attributes": {
+        "strength": 5,
+        "agility": 10,
+        "intelligence": 18,
+        "vitality": 11
+      },
+      "abilityIds": ["enemy_bolt", "enemy_sunder"],
+      "row": "back"
+    },
+    {
+      "id": "hollow_herald",
+      "name": "Hollow Herald",
+      "description": "A masked courtier whose voice arrives before he does.",
+      "level": 13,
+      "family": "cult",
+      "behaviorId": "enemy_support",
+      "attributes": {
+        "strength": 5,
+        "agility": 8,
+        "intelligence": 19,
+        "vitality": 12
+      },
+      "abilityIds": ["enemy_bolt", "enemy_heal"],
+      "row": "back"
     }
   ]
 }

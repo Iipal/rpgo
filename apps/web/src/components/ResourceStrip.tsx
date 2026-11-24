@@ -29,9 +29,9 @@ export function ResourceStrip({
         </span>
       </div>
       <div
-        className={`llm-chip ${health?.llm.fallbackActive ? "llm-chip-fallback" : ""}`}
+        className={`llm-chip ${health?.llm.fallbackActive && !health.llm.reachable ? "llm-chip-fallback" : ""}`}
         title={
-          health?.llm.fallbackActive
+          health?.llm.fallbackActive && !health.llm.reachable
             ? "The local model is unavailable; authored fallback content is being used."
             : `Local model: ${health?.llm.model ?? "checking"}`
         }
@@ -39,7 +39,7 @@ export function ResourceStrip({
         <span className="dot" aria-hidden="true" />
         {health === null
           ? "checking model"
-          : health.llm.fallbackActive
+          : health.llm.fallbackActive && !health.llm.reachable
             ? "fallback content"
             : `model ready`}
       </div>

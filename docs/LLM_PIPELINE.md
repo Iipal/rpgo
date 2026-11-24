@@ -68,11 +68,11 @@ If the server rejects JSON mode with a 400, one retry is made without `response_
 
 ## 4. Tasks
 
-| Task                | Prompt version          | Schema                | Purpose                                           |
-| ------------------- | ----------------------- | --------------------- | ------------------------------------------------- |
-| Event Director      | `event-director@1`      | `EventConcept@1`      | Propose one board concept.                        |
-| Event Generator     | `event-generator@1`     | `GeneratedEvent@1`    | Expand a validated concept into a complete event. |
-| Narrative Generator | `narrative-generator@1` | `NarrativeResponse@1` | Short victory/defeat flavour. Optional.           |
+| Task                | Prompt version          | Schema                | Purpose                                                      |
+| ------------------- | ----------------------- | --------------------- | ------------------------------------------------------------ |
+| Event Director      | `event-director@1`      | `EventConcept@1`      | Propose one board concept.                                   |
+| Event Generator     | `event-generator@1`     | `GeneratedEvent@1`    | Expand a validated concept into a complete event.            |
+| Narrative Generator | `narrative-generator@1` | `NarrativeResponse@1` | Short teaser, intro, discovery and result flavour. Optional. |
 
 Prompts live in `apps/server/src/infrastructure/llm/prompts/`. Human-readable contracts are in `docs/prompts/`.
 
@@ -98,7 +98,7 @@ Output:
 Semantic validation checks:
 
 - Requested category matches.
-- Region exists and is accessible.
+- Region exists, is accessible, and allows the proposed event type.
 - Location exists and is not unknown; otherwise the first eligible location is selected.
 - Type and objective kind match (`dungeon`/`attack` → defeat, `scout` → discover, `research` → research).
 - Discovery objectives have a valid target location still left to discover.
@@ -116,13 +116,20 @@ Semantic validation checks:
 - Encounter count does not exceed the type cap: dungeon 2, attack 1, scout 0, research 0.
 - Combat events have at least one encounter; non-combat events have none.
 - Enemy template IDs are in the known allowlist.
+- Every enemy belongs to a family allowed by the concept's region (`enemyFamilies`).
+- Only enemy templates allowed in that region are included in the generator context.
 - Behavior IDs are one of `enemy_brute`, `enemy_skirmisher`, `enemy_caster`, `enemy_support`.
 - Reward intents use allowed kinds and rarities.
 - Enemy stats, reward amounts and equipment stats are never accepted from the model; the engine derives them.
 
 ### 4.3 Narrative Generator
 
-One short string of 1–3 sentences, maximum 600 characters. Used for event result flavour only. If it fails or times out (5 seconds), the stored completion/failure text is used. Narrative can never block a game action.
+One short string of 1–3 sentences, maximum 600 characters. Kinds are `teaser`, `introduction`,
+`discovery`, `victory` and `defeat`. Teaser and introduction text is written onto a generated
+fallback event after it is persisted; discovery text is appended to the journal; victory and defeat
+text is appended to the stored result. Each call uses `maxAttempts: 1` and a five-second timeout. If
+generation fails or is disabled, the authored text remains and the action is unaffected. Narrative
+is always scheduled after the authoritative transaction and is never awaited by a command response.
 
 ## 5. Parsing and retries
 
@@ -198,6 +205,13 @@ The MVP targets a small local instruct model. Evaluate:
 - human-rated narrative quality
 
 Do not weaken validation to make a model pass. A failing model should be visible in diagnostics and should fall back.
+
+A versioned fixture set lives in `tests/fixtures/generation/cases.json`. Each case declares its kind
+(`concept`, `event` or `narrative`), the expected outcome (`accept` or `reject`) and the raw model
+payload. `tests/generation-fixtures.test.ts` evaluates every case through the same schema and
+semantic validation used in production and reports total, acceptance rate, accepted and rejected
+counts. Add a case before changing a prompt or schema, and never delete a failing case to make the
+suite pass.
 
 ## 10. Adding a task
 

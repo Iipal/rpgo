@@ -25,6 +25,7 @@ const REQUIRED = [
   "docs/LLM_PIPELINE.md",
   "docs/TESTING.md",
   "docs/OPERATIONS.md",
+  "docs/PRODUCTION_BASELINE.md",
   "docs/decisions/README.md",
   "docs/decisions/ADR-0001-modular-monolith.md",
   "docs/decisions/ADR-0002-llm-as-content-proposer.md",

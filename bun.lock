@@ -55,6 +55,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@rpgo/game-rules": "workspace:*",
+        "zod": "^3.24.0",
       },
     },
     "packages/game-rules": {

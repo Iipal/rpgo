@@ -2,7 +2,7 @@
 
 > **Purpose:** Full-production implementation roadmap for the text-based, LLM-driven RPG.
 >
-> **Prerequisite:** `MVP_RPG.md` has been completed, tested, documented, and tagged as the stable baseline. This plan starts from that completed MVP and extends it. It must not recreate MVP milestones or replace working systems without an explicit migration plan and ADR.
+> **Prerequisite:** `MVP_RPG.md` has been completed, tested, documented, and verified as the stable baseline (see [`PRODUCTION_BASELINE.md`](PRODUCTION_BASELINE.md)). This plan starts from that completed MVP and extends it. It must not recreate MVP milestones or replace working systems without an explicit migration plan and ADR.
 >
 > **Core principle:** Expand the deterministic RPG engine and content model while keeping the LLM constrained to creative generation and bounded proposals.
 
@@ -1081,7 +1081,7 @@ Create schemas and validators for:
 - World rules.
 - Event templates.
 
-Validate all static content in CI.
+Validate all static content in the test suite.
 
 ### 17.2 Content versioning
 
@@ -1111,7 +1111,7 @@ Each milestone assumes previous milestones are complete and accepted. The implem
 
 Steps:
 
-1. Verify MVP release tag and clean working tree.
+1. Verify the MVP test suite passes and record the working tree state.
 2. Run all MVP tests, type checks, formatting, and builds.
 3. Inspect all root/app `AGENTS.md` instructions.
 4. Review ADRs and mark superseded decisions correctly.
@@ -1131,7 +1131,7 @@ Deliverables:
 
 Acceptance:
 
-- Production work starts from a tested, documented commit.
+- Production work starts from a tested, documented baseline (see [`PRODUCTION_BASELINE.md`](PRODUCTION_BASELINE.md)).
 - No existing MVP behavior is accidentally scheduled for reimplementation.
 - All gaps and dependencies are explicit.
 
@@ -1148,7 +1148,7 @@ Steps:
 5. Define region and location graph connections.
 6. Add region-specific enemy family and event allowlists.
 7. Add discovery and access conditions.
-8. Add static content validation to CI.
+8. Add static content validation to the test suite.
 9. Add world/region/location read models.
 10. Expand the world map UI to show discovered/unknown/access states.
 11. Add tests for content references, discovery, and connection state.
@@ -1448,8 +1448,7 @@ Steps:
 8. Review ADR status and unresolved decisions.
 9. Record dependency versions, model configuration, prompt versions, and content version.
 10. Create release notes and known limitations.
-11. Tag the production baseline.
-12. Define post-release bug triage and balance iteration process.
+11. Define post-release bug triage and balance iteration process.
 
 Acceptance:
 
@@ -1554,7 +1553,7 @@ For every implementation change:
 
 ### 20.3 Documentation drift prevention
 
-Add CI checks for:
+Add local checks for:
 
 - Required documentation files.
 - Broken internal Markdown links.

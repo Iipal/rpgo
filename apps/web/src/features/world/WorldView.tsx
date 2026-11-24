@@ -13,15 +13,19 @@ function statusTone(status: LocationDto["status"]): "good" | "warn" | "muted" {
 function LocationRow({
   location,
   regionStatus,
+  connectedNames,
   busy,
   onDiscover,
 }: {
   location: LocationDto;
   regionStatus: RegionDto["status"];
+  connectedNames: string[];
   busy: boolean;
   onDiscover: (locationId: string) => void;
 }) {
-  const canDiscover = regionStatus === "accessible" && location.status !== "accessible";
+  const canDiscover =
+    (regionStatus === "accessible" || regionStatus === "discovered") &&
+    location.status !== "accessible";
   return (
     <li className="location-row">
       <div className="location-copy">
@@ -31,9 +35,13 @@ function LocationRow({
           <Pill tone={statusTone(location.status)}>{titleCase(location.status)}</Pill>
         </div>
         <p>{location.description}</p>
-        {location.discoveredTurn !== null ? (
-          <span className="hint">First charted on turn {location.discoveredTurn}</span>
-        ) : null}
+        <span className="hint">
+          {location.tags.join(" · ")}
+          {connectedNames.length > 0 ? ` · Routes: ${connectedNames.join(", ")}` : ""}
+          {location.discoveredTurn !== null
+            ? ` · First charted on turn ${location.discoveredTurn}`
+            : ""}
+        </span>
       </div>
       {canDiscover ? (
         <Button
@@ -91,7 +99,15 @@ function RegionCard({
         </div>
       </header>
       <p className="region-description">{region.description}</p>
-      {region.status === "accessible" ? (
+      {region.connections.length > 0 ? (
+        <p className="hint region-routes">
+          Routes:{" "}
+          {region.connections
+            .map((connection) => `${connection.name} (${titleCase(connection.status)})`)
+            .join(" · ")}
+        </p>
+      ) : null}
+      {region.status !== "unknown" ? (
         <>
           <div className="region-progress">
             <span>
@@ -107,6 +123,9 @@ function RegionCard({
                 key={location.id}
                 location={location}
                 regionStatus={region.status}
+                connectedNames={location.connectedLocationIds.map(
+                  (id) => region.locations.find((candidate) => candidate.id === id)?.name ?? id,
+                )}
                 busy={busy}
                 onDiscover={onDiscover}
               />
@@ -117,8 +136,8 @@ function RegionCard({
         <div className="locked-region">
           <GiPathDistance aria-hidden="true" />
           <p>
-            The road east is closed. Chart the old road and the Whispering Wood before the frontier
-            will open.
+            No route is open yet. Complete a frontier contract that reaches this region before the
+            company can travel here.
           </p>
         </div>
       )}

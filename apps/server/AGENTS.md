@@ -45,6 +45,7 @@ bun test                            # from repo root
 
 - Model output is untrusted. Parse with Zod, then run `validateConcept` / `validateGenerated`.
 - The model may choose only known templates, behaviours, event types and reward categories.
+- Enforce region event-type and enemy-family allowlists; do not pass disallowed templates to the generator.
 - The engine derives all stats and reward quantities.
 - Record every attempt in `llm_generations`, including status, latency, model and prompt/schema version.
 - Retry at most once and only where useful. Return fallback content when generation fails.

@@ -1,5 +1,5 @@
 import type { EventConcept, GeneratedEvent } from "@rpgo/contracts";
-import { ENEMY_TEMPLATE_IDS, enemyById } from "@rpgo/game-content";
+import { ENEMY_TEMPLATE_IDS, enemyById, regionById } from "@rpgo/game-content";
 import type {
   DifficultyBand,
   EventCategory,
@@ -60,6 +60,11 @@ export function validateConcept(
   const region = repo.getRegion(raw.regionId);
   if (!region) return { error: `unknown region ${raw.regionId}` };
   if (region.status !== "accessible") return { error: `region ${raw.regionId} is locked` };
+  const definition = regionById[region.id];
+  if (!definition) return { error: `unknown content region ${raw.regionId}` };
+  if (!definition.eventTypes.includes(raw.type)) {
+    return { error: `event type ${raw.type} is not allowed in ${raw.regionId}` };
+  }
 
   const locations = repo.getLocations().filter((location) => location.region_id === region.id);
   const eligible = locations.filter((location) => location.status !== "unknown");
@@ -132,6 +137,7 @@ export function validateGenerated(
   if (concept.objectiveKind !== "defeat_enemies" && generated.encounters.length > 0) {
     return { error: "non-combat event cannot have encounters" };
   }
+  const allowedFamilies = regionById[concept.regionId]?.enemyFamilies ?? [];
   for (const encounter of generated.encounters) {
     if (encounter.enemies.length === 0) return { error: "empty encounter" };
     for (const enemy of encounter.enemies) {
@@ -141,7 +147,11 @@ export function validateGenerated(
       if (!ALLOWED_BEHAVIORS.includes(enemy.behaviorId as (typeof ALLOWED_BEHAVIORS)[number])) {
         return { error: `unknown behavior ${enemy.behaviorId}` };
       }
-      if (!enemyById[enemy.templateId]) return { error: "unknown enemy template" };
+      const template = enemyById[enemy.templateId];
+      if (!template) return { error: "unknown enemy template" };
+      if (!allowedFamilies.includes(template.family)) {
+        return { error: `enemy family ${template.family} is not allowed in ${concept.regionId}` };
+      }
     }
   }
   const rarityAllowed = (rarity: Rarity | undefined): boolean =>

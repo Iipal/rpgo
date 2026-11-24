@@ -15,15 +15,16 @@ Tests use Bun's built-in runner. No test requires a live model server or the pro
 
 ## 2. Layers
 
-### Unit tests — `tests/game-rules.test.ts`
+### Unit tests — `tests/game-rules.test.ts`, `tests/combat-status.test.ts`
 
 - Derived stats and equipment bonuses.
 - XP thresholds, level-up overflow and level cap.
 - Seeded RNG determinism and stable seed hashing.
-- Discovery state transitions.
+- Discovery state transitions, region derivation and threat thresholds.
 - Combat determinism for identical input and seed.
 - Battle termination within the turn limit.
 - No combatant acts after being defeated.
+- Poison ticks, defense debuffs and draw outcomes.
 - Reward bands and rarity clamping.
 
 ### Integration tests — `tests/game-service.test.ts`
@@ -36,8 +37,42 @@ Tests use Bun's built-in runner. No test requires a live model server or the pro
 - Multi-encounter event: first victory persists when the second encounter fails.
 - Temporary opportunity expiry by world turn.
 - World action insertion is idempotent at the database boundary.
+- Completed battles are immutable across retries and a rebuilt repository.
+- Equipped items survive a rebuilt read model.
+- Region threat rises after outcome thresholds are reached.
+- Scouting the Ashen Gate unlocks the region; unknown regions reject discovery.
 
-Integration tests use `openDatabase(":memory:")`, run the real migrations, seed the real world and drive the real `GameService` with `DisabledLlmProvider`.
+Integration tests use `openDatabase(":memory:")`, run the real migrations, seed the real world and drive the real `GameService` with `DisabledLlmProvider`. `tests/helpers.ts` also accepts a fake provider so orchestration can be tested without a model server.
+
+### Static content tests — `tests/content-validation.test.ts`
+
+- Zod schemas accept every authored region, location, enemy, ability and equipment definition.
+- Six regions each have four to eight locations with tags and reciprocal location connections.
+- Every non-start region has an explicit scout access condition and a matching fallback route event.
+- Region connections are reciprocal.
+- Duplicate IDs, missing route events and enemy families outside a region allowlist are rejected.
+- The world read model exposes tags, dynamic route status and location adjacency.
+
+### HTTP tests — `tests/http.test.ts`
+
+- `{ data, correlationId }` envelope and correlation header echo.
+- Event board and read-model routes.
+- Malformed JSON and schema-invalid bodies return `INVALID_COMMAND`.
+- Operation IDs are honoured through the `x-operation-id` header.
+- Unknown routes and unknown events return typed `NOT_FOUND` errors.
+- Diagnostics never expose API keys.
+
+### Provider tests — `tests/generation-service.test.ts`
+
+`FakeLlmProvider` in `tests/fake-provider.ts` scripts deterministic responses. Coverage:
+
+- Success with recorded model, prompt/schema versions and correlation ID.
+- Malformed JSON retried once, then accepted.
+- Schema mismatch exhausting attempts.
+- Timeout and unavailable providers recorded without throwing.
+- Oversized or unrelated output capped and rejected.
+- Disabled generation making no provider call.
+- JSON wrapped in a Markdown fence.
 
 ### Model-contract tests — `tests/generation-validation.test.ts`
 
@@ -51,6 +86,16 @@ Integration tests use `openDatabase(":memory:")`, run the real migrations, seed 
 - Attack encounter cap.
 
 These tests call the same `validateConcept` and `validateGenerated` functions used in production. They do not call a model.
+
+### Generation fixture evaluation — `tests/fixtures/generation/cases.json`
+
+`tests/generation-fixtures.test.ts` evaluates a versioned set of representative model payloads
+through the real schema and semantic validation. Each case declares `kind`, `expect` and its raw
+value. The suite asserts every expectation and prints total, accepted, rejected and acceptance
+rate, which acts as a lightweight regression metric for prompt and schema changes.
+
+Add a case whenever a prompt, schema or allowlist changes. Expected-reject cases are as valuable as
+expected-accept cases and must not be deleted to make a model look better.
 
 ## 3. Determinism rules
 
@@ -108,10 +153,22 @@ Run `bun run dev` with the local model enabled, then:
 
 - New pure formula → unit test with exact values.
 - New command → integration test for success, duplicate operation and invalid state.
-- New schema or semantic rule → model-contract test.
+- New schema or semantic rule → model-contract test and a fixture case.
+- New provider or orchestration path → fake-provider test for success, malformed output, timeout and unavailable.
 - New migration → run from empty database and assert the new table/constraint exists.
 - New UI flow → add a manual checklist step and keep authoritative logic server-side.
 
-## 8. CI
+## 8. Local verification
 
-`.github/workflows/ci.yml` installs with the lockfile, then runs typecheck, tests, lint, build and docs check. It does not start a model server. Keep CI deterministic and offline.
+There is no hosted CI pipeline. Run the full gate locally before declaring work complete:
+
+```bash
+bun install --frozen-lockfile
+bun run typecheck
+bun test
+bun run lint
+bun run build
+bun run docs:check
+```
+
+`bun run docs:check` validates required documentation files and internal Markdown links. No step requires a live model server; keep verification deterministic and offline.

@@ -6,15 +6,19 @@ import type {
   PlayerDto,
   SystemHealthDto,
 } from "@rpgo/contracts";
-import { NarrativeResponseSchema } from "@rpgo/contracts";
-import { abilityById, locationName } from "@rpgo/game-content";
-import { nextLocationStatus, simulateBattle } from "@rpgo/game-rules";
+import { abilityById, locationName, regionById } from "@rpgo/game-content";
+import {
+  DISCOVERY_RANK,
+  deriveRegionStatus,
+  nextLocationStatus,
+  simulateBattle,
+  threatLevelForOutcomes,
+} from "@rpgo/game-rules";
 import type { Config } from "../config";
 import { ConflictError, InvalidCommandError, NotFoundError } from "../domain/errors";
 import { currentSchemaVersion } from "../infrastructure/database/database";
 import type { Repository, WorldRow } from "../infrastructure/database/repository";
 import type { GenerationService } from "../infrastructure/llm/generation-service";
-import { narrativeGeneratorPrompt } from "../infrastructure/llm/prompts/narrative-generator";
 import type { BoardService } from "./board";
 import { buildEncounterEnemies, buildPartyCombatants } from "./encounter";
 import { eventSeed } from "./events";
@@ -31,6 +35,7 @@ import {
   playerDto,
   type RewardPreviewInternal,
 } from "./mappers";
+import { generateNarrative, narrativeLogger } from "./narrative";
 import { grantRewards, rewardSummaryText } from "./rewards";
 import { ensureGame } from "./seeding";
 
@@ -146,7 +151,7 @@ export class GameService {
       this.repo.saveReceipt(operationId, "accept_event", core);
     });
 
-    await this.refreshBoard(correlationId);
+    this.refreshBoard(correlationId);
     const output: CommandResponseDto = {
       state: this.state(),
       event: this.getEvent(id),
@@ -291,6 +296,7 @@ export class GameService {
             resultText: event.completion_text,
             completedTurn: turn,
           });
+          this.applyWorldRules(event.region_id);
           const grant = grantRewards(this.repo, {
             eventId: id,
             turn,
@@ -328,6 +334,7 @@ export class GameService {
           resultText: event.failure_text,
           completedTurn: turn,
         });
+        this.applyWorldRules(event.region_id);
         this.repo.addJournal(
           context.world.id,
           turn,
@@ -347,8 +354,8 @@ export class GameService {
     });
 
     if (completed || failed) {
-      await this.finishEventStory(id, completed ? "victory" : "defeat", correlationId);
-      await this.refreshBoard(correlationId);
+      this.scheduleResultNarrative(id, completed ? "victory" : "defeat", correlationId);
+      this.refreshBoard(correlationId);
     }
 
     const report = this.repo.getBattle(id, index);
@@ -379,6 +386,7 @@ export class GameService {
             const next = nextLocationStatus(target.status);
             if (next) {
               this.repo.setLocationStatus(target.id, next, context.world.turn);
+              this.refreshRegionStatus(target.region_id, context.world.turn);
               discovered = target.name;
             }
           }
@@ -394,6 +402,7 @@ export class GameService {
         resultText: event.completion_text,
         completedTurn: newTurn,
       });
+      this.applyWorldRules(event.region_id);
       const grant = grantRewards(this.repo, {
         eventId: event.id,
         turn: newTurn,
@@ -418,8 +427,8 @@ export class GameService {
       } satisfies CommandResponseDto);
     });
 
-    await this.finishEventStory(event.id, "victory", correlationId);
-    await this.refreshBoard(correlationId);
+    this.scheduleResultNarrative(event.id, "victory", correlationId);
+    this.refreshBoard(correlationId);
     const output: CommandResponseDto = {
       state: this.state(),
       event: this.getEvent(event.id),
@@ -440,18 +449,22 @@ export class GameService {
     const location = this.repo.getLocation(locationId);
     if (!location) throw new NotFoundError(`Location ${locationId} not found`);
     const region = this.repo.getRegion(location.region_id);
-    if (region?.status !== "accessible") {
-      throw new ConflictError("The region is not accessible yet");
+    if (region?.status === "unknown") {
+      throw new ConflictError("The region is not known yet");
     }
     if (location.status === "accessible") {
       const output: CommandResponseDto = { state: this.state(), event: null, report: null };
       this.repo.saveReceipt(operationId, "discover_location", output);
       return output;
     }
+    let turn = context.world.turn;
     this.repo.transaction(() => {
       const next = nextLocationStatus(location.status);
-      if (next) this.repo.setLocationStatus(location.id, next, context.world.turn);
-      const turn = this.advanceWorld(context.world.id, "location_discovered", operationId, {
+      if (next) {
+        this.repo.setLocationStatus(location.id, next, context.world.turn);
+        this.refreshRegionStatus(location.region_id, context.world.turn);
+      }
+      turn = this.advanceWorld(context.world.id, "location_discovered", operationId, {
         locationId,
       });
       this.repo.addJournal(
@@ -467,7 +480,8 @@ export class GameService {
         report: null,
       } satisfies CommandResponseDto);
     });
-    await this.refreshBoard(correlationId);
+    this.refreshBoard(correlationId);
+    this.scheduleDiscoveryNarrative(location, turn, correlationId);
     const output: CommandResponseDto = { state: this.state(), event: null, report: null };
     this.repo.saveReceipt(operationId, "discover_location", output);
     return output;
@@ -748,6 +762,17 @@ export class GameService {
     );
   }
 
+  private scheduleResultNarrative(
+    eventId: string,
+    kind: "victory" | "defeat",
+    correlationId: string,
+  ): void {
+    if (!this.generation.enabled) return;
+    void this.finishEventStory(eventId, kind, correlationId).catch((error) => {
+      narrativeLogger(correlationId, "Result narrative failed", error);
+    });
+  }
+
   private async finishEventStory(
     eventId: string,
     kind: "victory" | "defeat",
@@ -755,50 +780,97 @@ export class GameService {
   ): Promise<void> {
     const row = this.repo.getEvent(eventId);
     if (!row) return;
-    const context = this.context();
-    const prompt = narrativeGeneratorPrompt.build({
-      kind,
-      title: row.title,
-      location: locationName(row.location_id ?? undefined) ?? "the frontier",
-      partyLevel: Math.max(...context.party.characters.map((character) => character.level), 1),
-      extra: kind === "victory" ? row.completion_text : row.failure_text,
-    });
-    const result = await this.generation.generate({
-      task: "narrative_generator",
-      promptVersion: narrativeGeneratorPrompt.version,
-      schemaVersion: narrativeGeneratorPrompt.schemaVersion,
-      schemaName: narrativeGeneratorPrompt.schemaName,
-      systemPrompt: prompt.system,
-      userPrompt: prompt.user,
-      schema: NarrativeResponseSchema,
+    const partyLevel = Math.max(
+      ...this.context().party.characters.map((character) => character.level),
+      1,
+    );
+    const text = await generateNarrative(
+      this.generation,
+      {
+        kind,
+        title: row.title,
+        location: locationName(row.location_id ?? undefined) ?? "the frontier",
+        partyLevel,
+        extra: kind === "victory" ? row.completion_text : row.failure_text,
+      },
       correlationId,
-      maxOutputTokens: 250,
-      timeoutMs: Math.min(this.config.llm.timeoutMs, 5000),
-      maxAttempts: 1,
-    });
-    if (result?.data.text) {
-      this.repo.setEventResultText(
-        eventId,
-        `${row.result_text ?? ""}\n\n${result.data.text}`.trim(),
-      );
+    );
+    if (text) {
+      this.repo.setEventResultText(eventId, `${row.result_text ?? ""}\n\n${text}`.trim());
     }
   }
 
-  private async refreshBoard(correlationId: string): Promise<void> {
+  private scheduleDiscoveryNarrative(
+    location: NonNullable<ReturnType<Repository["getLocation"]>>,
+    turn: number,
+    correlationId: string,
+  ): void {
+    if (!this.generation.enabled) return;
+    void (async () => {
+      const world = this.repo.getWorld();
+      const partyRow = this.repo.getParty();
+      if (!world || !partyRow) return;
+      const party = buildParty(this.repo, partyRow);
+      const text = await generateNarrative(
+        this.generation,
+        {
+          kind: "discovery",
+          title: location.name,
+          location: location.name,
+          partyLevel: Math.max(...party.characters.map((character) => character.level), 1),
+          extra: location.description,
+        },
+        correlationId,
+      );
+      if (text) this.repo.addJournal(world.id, turn, "discovery", location.name, text);
+    })().catch((error) => {
+      narrativeLogger(correlationId, "Discovery narrative failed", error);
+    });
+  }
+
+  /**
+   * Board replenishment never waits on the model in a command response.
+   * Without a model it runs synchronously from deterministic content; with a
+   * model it runs in the background and leaves the current board intact.
+   */
+  private refreshBoard(correlationId: string): void {
     try {
       const world = this.repo.getWorld();
       const partyRow = this.repo.getParty();
       if (!world || !partyRow) return;
-      await this.board.refresh(world, buildParty(this.repo, partyRow), correlationId);
+      const party = buildParty(this.repo, partyRow);
+      if (!this.generation.enabled) {
+        this.board.refreshFallback(world, party);
+        return;
+      }
+      void this.board.refresh(world, party, correlationId).catch((error) => {
+        narrativeLogger(correlationId, "Board refresh failed", error);
+      });
     } catch (error) {
-      console.error(
-        JSON.stringify({
-          level: "error",
-          correlationId,
-          message: "Board refresh failed",
-          error: (error as Error).message,
-        }),
-      );
+      narrativeLogger(correlationId, "Board refresh failed", error);
     }
+  }
+
+  private applyWorldRules(regionId: string): void {
+    const region = this.repo.getRegion(regionId);
+    if (!region) return;
+    const outcomes = this.repo.countRegionOutcomes(regionId);
+    const baseThreat = regionById[regionId]?.threatLevel ?? region.threat_level;
+    const nextThreat = threatLevelForOutcomes(outcomes.completed, outcomes.failed, baseThreat);
+    if (nextThreat !== region.threat_level) this.repo.setRegionThreat(regionId, nextThreat);
+  }
+
+  private refreshRegionStatus(regionId: string, turn: number): void {
+    const region = this.repo.getRegion(regionId);
+    const world = this.repo.getWorld();
+    if (!region || !world) return;
+    const statuses = this.repo
+      .getLocations()
+      .filter((location) => location.region_id === regionId)
+      .map((location) => location.status);
+    const target = deriveRegionStatus(statuses);
+    if (DISCOVERY_RANK[target] <= DISCOVERY_RANK[region.status]) return;
+    this.repo.setRegionStatus(regionId, target);
+    this.repo.addJournal(world.id, turn, "discovery", `${region.name} opened`, region.description);
   }
 }

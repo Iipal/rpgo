@@ -136,10 +136,34 @@ export interface EnemyTemplate {
   name: string;
   description: string;
   level: number;
+  /** Broad content family used for region allowlists. */
+  family: string;
   behaviorId: string;
   attributes: Attributes;
   abilityIds: string[];
   row: Row;
+}
+
+export type RegionConnectionStatus = "unknown" | "known" | "open" | "blocked";
+
+export interface RegionConnectionDefinition {
+  toRegionId: string;
+  status: RegionConnectionStatus;
+}
+
+export type RegionAccessCondition =
+  | { kind: "start" }
+  | { kind: "scout"; fromRegionId: string; targetLocationId: string };
+
+export interface LocationDefinition {
+  id: string;
+  version: number;
+  tags: string[];
+  name: string;
+  description: string;
+  status: DiscoveryStatus;
+  /** Bidirectional location adjacency within the same region. */
+  connections: string[];
 }
 
 export interface EquipmentDefinition {
@@ -153,15 +177,16 @@ export interface EquipmentDefinition {
 
 export interface RegionDefinition {
   id: string;
+  version: number;
+  tags: string[];
   name: string;
   description: string;
   levelRange: { min: number; max: number };
   status: DiscoveryStatus;
   threatLevel: number;
-  locations: Array<{
-    id: string;
-    name: string;
-    description: string;
-    status: DiscoveryStatus;
-  }>;
+  eventTypes: EventType[];
+  enemyFamilies: string[];
+  accessCondition: RegionAccessCondition;
+  connections: RegionConnectionDefinition[];
+  locations: LocationDefinition[];
 }

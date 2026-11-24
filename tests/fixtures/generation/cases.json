@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "note": "Representative model outputs used as a regression and evaluation fixture set. Add a case before changing a prompt or schema.",
+  "cases": [
+    {
+      "name": "scout concept with implied location",
+      "kind": "concept",
+      "expect": "accept",
+      "value": {
+        "type": "scout",
+        "category": "opportunity",
+        "title": "The Reed-Light Path",
+        "hook": "Something glints between the reeds where no path is marked.",
+        "regionId": "greenreach",
+        "difficultyBand": "easy",
+        "objectiveKind": "discover_location",
+        "expiresInWorldTurns": 3
+      }
+    },
+    {
+      "name": "dungeon concept with explicit location",
+      "kind": "concept",
+      "expect": "accept",
+      "value": {
+        "type": "dungeon",
+        "category": "storyline",
+        "title": "The Sunken Chapel",
+        "hook": "Bells ring under the marsh at every midnight.",
+        "regionId": "greenreach",
+        "locationId": "whispering_wood",
+        "difficultyBand": "normal",
+        "objectiveKind": "defeat_enemies",
+        "storylineKey": "sunken_chapel"
+      }
+    },
+    {
+      "name": "concept in an unknown region",
+      "kind": "concept",
+      "expect": "reject",
+      "value": {
+        "type": "scout",
+        "category": "opportunity",
+        "title": "A Door of Salt",
+        "hook": "A salt-crusted door stands where the map ends.",
+        "regionId": "moon_palace",
+        "difficultyBand": "easy",
+        "objectiveKind": "discover_location",
+        "expiresInWorldTurns": 2
+      }
+    },
+    {
+      "name": "concept in a locked region",
+      "kind": "concept",
+      "expect": "reject",
+      "value": {
+        "type": "attack",
+        "category": "opportunity",
+        "title": "The Black Gate",
+        "hook": "Something heavy moves behind the sealed gate.",
+        "regionId": "ashen_march",
+        "difficultyBand": "normal",
+        "objectiveKind": "defeat_enemies",
+        "expiresInWorldTurns": 3
+      }
+    },
+    {
+      "name": "scout with a combat objective",
+      "kind": "concept",
+      "expect": "reject",
+      "value": {
+        "type": "scout",
+        "category": "opportunity",
+        "title": "A Quiet Errand",
+        "hook": "The guild asks for a quiet walk along the road.",
+        "regionId": "greenreach",
+        "difficultyBand": "easy",
+        "objectiveKind": "defeat_enemies",
+        "expiresInWorldTurns": 2
+      }
+    },
+    {
+      "name": "concept duplicating the seeded board",
+      "kind": "concept",
+      "expect": "reject",
+      "value": {
+        "type": "dungeon",
+        "category": "storyline",
+        "title": "Beneath the Whispering Wood",
+        "hook": "The old story returns with a new hook and a familiar name.",
+        "regionId": "greenreach",
+        "difficultyBand": "normal",
+        "objectiveKind": "defeat_enemies",
+        "storylineKey": "whispering_wood"
+      }
+    },
+    {
+      "name": "scout event matching its concept",
+      "kind": "event",
+      "expect": "accept",
+      "concept": {
+        "type": "scout",
+        "category": "opportunity",
+        "title": "The Reed-Light Path",
+        "hook": "Something glints between the reeds where no path is marked.",
+        "regionId": "greenreach",
+        "difficultyBand": "easy",
+        "objectiveKind": "discover_location",
+        "expiresInWorldTurns": 3
+      },
+      "value": {
+        "title": "The Reed-Light Path",
+        "description": "A lantern glow leads the company off the old road and into the marsh reeds.",
+        "introduction": "The company follows a flicker of light between the reeds. The ground is soft, and the air smells of iron and rain.",
+        "objectives": [
+          {
+            "kind": "discover_location",
+            "description": "Chart the reed path.",
+            "targetCount": 1
+          }
+        ],
+        "encounters": [],
+        "rewardIntent": [
+          {
+            "kind": "gold",
+            "target": "party"
+          }
+        ],
+        "completionText": "The company returns with a new route marked on the guild map.",
+        "failureText": "The reeds close over the trail. The company withdraws without a new route."
+      }
+    },
+    {
+      "name": "two-encounter dungeon event",
+      "kind": "event",
+      "expect": "accept",
+      "concept": {
+        "type": "dungeon",
+        "category": "opportunity",
+        "title": "The Drowned Stair",
+        "hook": "Stone steps descend into water that never reflects the sky.",
+        "regionId": "greenreach",
+        "difficultyBand": "normal",
+        "objectiveKind": "defeat_enemies",
+        "expiresInWorldTurns": 4
+      },
+      "value": {
+        "title": "The Drowned Stair",
+        "description": "A drowned stair leads beneath the marsh to a vault the guild once sealed.",
+        "introduction": "The company descends until torchlight cannot reach the ceiling. Water laps at every step.",
+        "objectives": [
+          {
+            "kind": "defeat_enemies",
+            "description": "Clear the vault.",
+            "targetCount": 2
+          }
+        ],
+        "encounters": [
+          {
+            "title": "The flooded landing",
+            "description": "Goblin brutes hold the flooded landing.",
+            "enemies": [
+              {
+                "templateId": "goblin_brute",
+                "count": 2,
+                "behaviorId": "enemy_brute"
+              }
+            ]
+          },
+          {
+            "title": "The sealed vault",
+            "description": "A scarred bandit captain waits beside a circle of salt.",
+            "enemies": [
+              {
+                "templateId": "bandit_captain",
+                "count": 1,
+                "behaviorId": "enemy_brute"
+              }
+            ]
+          }
+        ],
+        "rewardIntent": [
+          {
+            "kind": "gold",
+            "target": "party"
+          },
+          {
+            "kind": "equipment",
+            "rarity": "rare",
+            "target": "party"
+          }
+        ],
+        "completionText": "The vault is quiet again and the guild has its answer.",
+        "failureText": "The company retreats up the drowned stair with wounded in tow."
+      }
+    },
+    {
+      "name": "event with an unknown enemy template",
+      "kind": "event",
+      "expect": "reject",
+      "concept": {
+        "type": "dungeon",
+        "category": "opportunity",
+        "title": "The Drowned Stair",
+        "hook": "Stone steps descend into water that never reflects the sky.",
+        "regionId": "greenreach",
+        "difficultyBand": "normal",
+        "objectiveKind": "defeat_enemies",
+        "expiresInWorldTurns": 4
+      },
+      "value": {
+        "title": "The Drowned Stair",
+        "description": "A drowned stair leads beneath the marsh to a vault the guild once sealed.",
+        "introduction": "The company descends until torchlight cannot reach the ceiling. Water laps at every step.",
+        "objectives": [
+          {
+            "kind": "defeat_enemies",
+            "description": "Clear the vault.",
+            "targetCount": 1
+          }
+        ],
+        "encounters": [
+          {
+            "title": "The flooded landing",
+            "description": "A moon knight rises from the water.",
+            "enemies": [
+              {
+                "templateId": "moon_knight",
+                "count": 1,
+                "behaviorId": "enemy_brute"
+              }
+            ]
+          }
+        ],
+        "rewardIntent": [
+          {
+            "kind": "gold",
+            "target": "party"
+          }
+        ],
+        "completionText": "The vault is quiet again.",
+        "failureText": "The company retreats up the drowned stair."
+      }
+    },
+    {
+      "name": "narrative with a short line",
+      "kind": "narrative",
+      "expect": "accept",
+      "value": {
+        "text": "A cold wind rises off the water and the reeds fall silent."
+      }
+    },
+    {
+      "name": "empty narrative",
+      "kind": "narrative",
+      "expect": "reject",
+      "value": {
+        "text": ""
+      }
+    }
+  ]
+}

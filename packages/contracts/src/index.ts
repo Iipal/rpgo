@@ -111,8 +111,17 @@ export const LocationDtoSchema = z.object({
   description: z.string(),
   status: DiscoveryStatusSchema,
   discoveredTurn: z.number().int().nullable(),
+  tags: z.array(z.string()),
+  connectedLocationIds: z.array(z.string()),
 });
 export type LocationDto = z.infer<typeof LocationDtoSchema>;
+
+export const RegionConnectionDtoSchema = z.object({
+  regionId: z.string(),
+  name: z.string(),
+  status: z.enum(["unknown", "known", "open", "blocked"]),
+});
+export type RegionConnectionDto = z.infer<typeof RegionConnectionDtoSchema>;
 
 export const RegionDtoSchema = z.object({
   id: z.string(),
@@ -121,6 +130,8 @@ export const RegionDtoSchema = z.object({
   levelRange: z.object({ min: z.number().int(), max: z.number().int() }),
   status: DiscoveryStatusSchema,
   threatLevel: z.number().int(),
+  tags: z.array(z.string()),
+  connections: z.array(RegionConnectionDtoSchema),
   locations: z.array(LocationDtoSchema),
 });
 export type RegionDto = z.infer<typeof RegionDtoSchema>;

@@ -83,6 +83,10 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full dependency flow 
 - Add a new numbered migration; never edit an applied migration in place.
 - Test migrations from an empty database.
 - Preserve the ability to back up and restore the SQLite file.
+- Update `data/*.json` and the schemas/validation in `packages/game-content` together.
+- Keep region and location connections reciprocal, and keep region event/enemy allowlists valid.
+- Every non-start region needs an explicit access condition and a fallback route event that reaches it.
+- Run `tests/content-validation.test.ts` after any static content change.
 
 ### LLM changes
 

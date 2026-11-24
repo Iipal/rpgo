@@ -4,7 +4,7 @@ import {
   type GeneratedEvent,
   GeneratedEventSchema,
 } from "@rpgo/contracts";
-import { enemies, fallbackEvents } from "@rpgo/game-content";
+import { enemies, fallbackEvents, locationName, regionById } from "@rpgo/game-content";
 import { hashSeed } from "@rpgo/game-rules";
 import type { EventRow, Repository, WorldRow } from "../infrastructure/database/repository";
 import type { GenerationService } from "../infrastructure/llm/generation-service";
@@ -19,16 +19,23 @@ import {
   validateGenerated,
 } from "./generation-validation";
 import type { PartyBundle } from "./mappers";
+import { generateNarrative, narrativeLogger } from "./narrative";
 
 const MAX_BOARD = 4;
 
 export class BoardService {
+  private refreshing = false;
+
   constructor(
     private readonly repo: Repository,
     private readonly generation: GenerationService,
   ) {}
 
-  async refresh(world: WorldRow, party: PartyBundle, correlationId: string): Promise<number> {
+  /**
+   * Fill the board with deterministic content only. This never waits on a model
+   * and is safe to call inside a command response path.
+   */
+  refreshFallback(world: WorldRow, party: PartyBundle): number {
     this.repo.expireOpportunities(world.id, world.turn);
     let added = 0;
     let failures = 0;
@@ -36,19 +43,10 @@ export class BoardService {
     while (failures < 3) {
       const board = this.repo.getVisibleBoard(world.id);
       if (board.length >= MAX_BOARD) break;
-      const storylineCount = board.filter((event) => event.category === "storyline").length;
-      const opportunityCount = board.filter((event) => event.category === "opportunity").length;
-      const category =
-        storylineCount < 1
-          ? "storyline"
-          : opportunityCount < 2
-            ? "opportunity"
-            : storylineCount < 2
-              ? "storyline"
-              : null;
+      const category = this.nextCategory(board);
       if (!category) break;
 
-      const event = await this.createOne(world, party, category, correlationId);
+      const event = this.createFallback(world, party, category, null);
       if (!event) {
         failures += 1;
         continue;
@@ -57,6 +55,44 @@ export class BoardService {
       failures = 0;
     }
     return added;
+  }
+
+  /** Fill the board, preferring the model, then falling back deterministically. */
+  async refresh(world: WorldRow, party: PartyBundle, correlationId: string): Promise<number> {
+    if (this.refreshing) return 0;
+    this.refreshing = true;
+    try {
+      this.repo.expireOpportunities(world.id, world.turn);
+      let added = 0;
+      let failures = 0;
+
+      while (failures < 3) {
+        const board = this.repo.getVisibleBoard(world.id);
+        if (board.length >= MAX_BOARD) break;
+        const category = this.nextCategory(board);
+        if (!category) break;
+
+        const event = await this.createOne(world, party, category, correlationId);
+        if (!event) {
+          failures += 1;
+          continue;
+        }
+        added += 1;
+        failures = 0;
+      }
+      return added;
+    } finally {
+      this.refreshing = false;
+    }
+  }
+
+  private nextCategory(board: EventRow[]): "storyline" | "opportunity" | null {
+    const storylineCount = board.filter((event) => event.category === "storyline").length;
+    const opportunityCount = board.filter((event) => event.category === "opportunity").length;
+    if (storylineCount < 1) return "storyline";
+    if (opportunityCount < 2) return "opportunity";
+    if (storylineCount < 2) return "storyline";
+    return null;
   }
 
   /** Development/diagnostics endpoint: force a generated (or fallback) event. */
@@ -82,7 +118,7 @@ export class BoardService {
       const created = await this.tryLlm(world, party, partyLevel, category, correlationId);
       if (created) return created;
     }
-    return this.createFallback(world, category);
+    return this.createFallback(world, party, category, correlationId);
   }
 
   private async tryLlm(
@@ -144,12 +180,16 @@ export class BoardService {
       partyLevel,
       partyPower: party.party.power,
       turn: world.turn,
-      enemyTemplates: enemies.map((enemy) => ({
-        id: enemy.id,
-        name: enemy.name,
-        level: enemy.level,
-        behaviorId: enemy.behaviorId,
-      })),
+      enemyTemplates: enemies
+        .filter((enemy) =>
+          (regionById[concept.regionId]?.enemyFamilies ?? []).includes(enemy.family),
+        )
+        .map((enemy) => ({
+          id: enemy.id,
+          name: enemy.name,
+          level: enemy.level,
+          behaviorId: enemy.behaviorId,
+        })),
       allowedBehaviors: [...ALLOWED_BEHAVIORS],
       maxEncounters: MAX_ENCOUNTERS[concept.type],
     });
@@ -169,7 +209,7 @@ export class BoardService {
     const generatedValidation = validateGenerated(eventResult.data, concept);
     if (generatedValidation.error) return null;
 
-    return this.repo.transaction(() =>
+    const created = this.repo.transaction(() =>
       persistEvent(
         this.repo,
         draftFromGenerated(
@@ -181,9 +221,20 @@ export class BoardService {
         ),
       ),
     );
+    const partyLevelForNarrative = Math.max(
+      ...party.characters.map((character) => character.level),
+      1,
+    );
+    this.scheduleNarrative(created, partyLevelForNarrative, correlationId);
+    return created;
   }
 
-  private createFallback(world: WorldRow, category: "storyline" | "opportunity"): EventRow | null {
+  private createFallback(
+    world: WorldRow,
+    party: PartyBundle,
+    category: "storyline" | "opportunity",
+    correlationId: string | null,
+  ): EventRow | null {
     const candidates = fallbackEvents.filter((definition) => {
       if (definition.category !== category) return false;
       const region = this.repo.getRegion(definition.regionId);
@@ -204,8 +255,60 @@ export class BoardService {
         hashSeed(`${world.id}:${world.turn}:${category}:${candidates.length}`) % candidates.length
       ] ?? candidates[0];
     if (!pick) return null;
-    return this.repo.transaction(() =>
+    const event = this.repo.transaction(() =>
       persistEvent(this.repo, draftFromFallback(pick, world.id, world.turn)),
+    );
+    const partyLevel = Math.max(...party.characters.map((character) => character.level), 1);
+    this.scheduleNarrative(event, partyLevel, correlationId);
+    return event;
+  }
+
+  /**
+   * Fallback text is always playable. When a model is configured we enrich the
+   * hook and introduction in the background, never blocking the command.
+   */
+  private scheduleNarrative(
+    event: EventRow,
+    partyLevel: number,
+    correlationId: string | null,
+  ): void {
+    if (!this.generation.enabled || !correlationId) return;
+    void this.enrichNarrative(event, partyLevel, correlationId).catch((error) => {
+      narrativeLogger(correlationId, "Narrative enrichment failed", error);
+    });
+  }
+
+  private async enrichNarrative(
+    event: EventRow,
+    partyLevel: number,
+    correlationId: string,
+  ): Promise<void> {
+    const location = locationName(event.location_id ?? undefined) ?? "the frontier";
+    const teaser = await generateNarrative(
+      this.generation,
+      {
+        kind: "teaser",
+        title: event.title,
+        location,
+        partyLevel,
+        extra: event.hook,
+      },
+      correlationId,
+    );
+    if (!teaser) return;
+    const introduction = await generateNarrative(
+      this.generation,
+      {
+        kind: "introduction",
+        title: event.title,
+        location,
+        partyLevel,
+        extra: event.introduction,
+      },
+      correlationId,
+    );
+    this.repo.transaction(() =>
+      this.repo.setEventNarrative(event.id, teaser, introduction ?? event.introduction),
     );
   }
 }

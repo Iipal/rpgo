@@ -74,26 +74,35 @@ POST /api/events/:id/accept
        increment world turn once
        append journal
        save receipt
-   → after transaction: refresh board (may call the model)
+   → after transaction: refresh board (scheduled; fallback when generation is off or fails)
    → return fresh read model + event detail
 ```
 
 No model call occurs inside a database transaction. A repeated operation returns the stored receipt with a fresh read model and never double-applies rewards or world turns.
 
+Board refresh and post-command narrative are never awaited by the HTTP response. When generation is
+disabled the board is filled synchronously from fallback definitions. When generation is enabled the
+model-backed refresh and teaser, introduction, discovery and result narratives are scheduled as
+background tasks, and each event falls back deterministically if generation fails. A slow or
+unavailable model therefore cannot delay or block a game action.
+
 ## 4. Key modules
 
-| Module                                     | Responsibility                                                             |
-| ------------------------------------------ | -------------------------------------------------------------------------- |
-| `application/game-service.ts`              | Use cases, transactions, receipts, world advancement, health/diagnostics.  |
-| `application/board.ts`                     | Board limits, category mix, expiry, LLM director/generator flow, fallback. |
-| `application/events.ts`                    | Event draft persistence, reward preview, deterministic event seed.         |
-| `application/encounter.ts`                 | Convert party rows and encounter definitions to combatants.                |
-| `application/rewards.ts`                   | Transactional reward grants with stable grant keys.                        |
-| `application/mappers.ts`                   | Row → DTO mapping; no SQL in this file.                                    |
-| `application/generation-validation.ts`     | Semantic checks after Zod validation: IDs, objectives, caps, duplicates.   |
-| `infrastructure/llm/generation-service.ts` | Attempt loop, JSON extraction, Zod parsing, attempt metadata.              |
-| `infrastructure/llm/openai-provider.ts`    | OpenAI-compatible HTTP, timeout, retry, response-size limit, health.       |
-| `infrastructure/database/repository.ts`    | All SQL, transactions and row mapping.                                     |
+| Module                                     | Responsibility                                                                      |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `application/game-service.ts`              | Use cases, transactions, receipts, world advancement, health/diagnostics.           |
+| `application/board.ts`                     | Board limits, category mix, expiry, LLM director/generator flow, fallback.          |
+| `application/narrative.ts`                 | Non-blocking narrative helper shared by board and event use cases.                  |
+| `application/events.ts`                    | Event draft persistence, reward preview, deterministic event seed.                  |
+| `application/encounter.ts`                 | Convert party rows and encounter definitions to combatants.                         |
+| `application/rewards.ts`                   | Transactional reward grants with stable grant keys.                                 |
+| `application/mappers.ts`                   | Row → DTO mapping; no SQL in this file.                                             |
+| `application/generation-validation.ts`     | Semantic checks after Zod validation: IDs, objectives, caps, duplicates.            |
+| `infrastructure/llm/generation-service.ts` | Attempt loop, JSON extraction, Zod parsing, attempt metadata.                       |
+| `infrastructure/llm/openai-provider.ts`    | OpenAI-compatible HTTP, timeout, retry, response-size limit, health.                |
+| `infrastructure/database/repository.ts`    | All SQL, transactions and row mapping.                                              |
+| `packages/game-content`                    | Versioned static content, Zod schemas, cross-reference validation, fallback events. |
+| `packages/game-rules`                      | Pure world, character, reward and deterministic combat rules.                       |
 
 ## 5. Game loop sequence
 
@@ -137,6 +146,8 @@ Player completes a scout/research event
 - Turn order is speed descending, then combatant ID as a stable tiebreak.
 - Behavior presets use deterministic rules and reason codes. No model call occurs in combat.
 - A battle row is unique on `(event_id, encounter_index)`. Resolution reads an existing row instead of simulating again.
+- Region status is derived from the most advanced known location; it only moves forward.
+- Region threat is recomputed from completed and failed outcomes: `min(10, base + floor(completed / 3) + floor(failed / 2))`. It is a pure function, so repeated recomputation is idempotent.
 
 ## 7. Idempotency layers
 
@@ -169,11 +180,29 @@ Failures never mutate game state. A board refresh uses deterministic fallback de
 - Battle logs use UI SDK `Collapsible`; dialogs use UI SDK `Dialog`; progress uses native accessible progress bars styled by the app.
 - Generation status is displayed separately from gameplay results.
 
-## 10. Extension points
+## 10. Content model
+
+`data/regions.json` is versioned and validated at import. Regions and locations carry stable IDs,
+versions, tags and reciprocal graph connections. Each region declares:
+
+- `eventTypes` — the events the Event Director may propose there.
+- `enemyFamilies` — the enemy families the Event Generator may use there.
+- `accessCondition` — the starting region or the scout route that reveals an entry location.
+- `connections` — reciprocal links used by the world read model.
+
+`packages/game-content/src/schemas.ts` validates each file with Zod. `findContentErrors` adds
+cross-file checks: duplicate IDs, reciprocal region/location links, access routes, fallback content,
+enemy families, abilities and equipment. Invalid content throws before the server starts.
+
+The world read model adds `tags`, dynamic `connections` and location adjacency to the persisted
+region/location rows. Persisted state remains authoritative; static content only describes the
+world.
+
+## 11. Extension points
 
 - Add migrations and repository methods for new persisted concepts.
 - Add pure rules to `packages/game-rules` with unit tests.
-- Add content templates to `data/` and update `packages/game-content`.
+- Add content templates to `data/`; extend the content schemas and validation tests in the same change.
 - Add generation tasks by defining a contract schema, a versioned prompt and a generation-service call.
 - Add screens as feature folders; keep authoritative computation on the server.
 - Introduce multi-stage storylines as a separate table and application service rather than overloading event JSON.
